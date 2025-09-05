@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Resto.Front.Api.V8" Version="8.7.6032" />
+	</ItemGroup>
+    <ItemGroup>
+        <Reference Include="System" />
+		<Reference Include="System.Core" />
+        <Reference Include="System.Xml.Linq" />
+        <Reference Include="System.Data.DataSetExtensions" />
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="System.Data" />    
+        <Reference Include="System.Net.Http" />    
+        <Reference Include="System.Xml" />
+  </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Interfaces\" />
+    </ItemGroup>
+ </Project>
