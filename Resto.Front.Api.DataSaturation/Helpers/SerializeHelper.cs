@@ -5,9 +5,9 @@ using System.Xml.Serialization;
 
 namespace Resto.Front.Api.DataSaturation.Helpers
 {
-    public class SerializeHelper
+    public static class SerializeHelper
     {
-        public static string SerializeToXml<T>(T data) where T : class
+        public static string SerializeToXml<T>(this T data) where T : class
         {
             using (var sw = new StringWriter())
             using (var writer = XmlWriter.Create(sw))
@@ -17,7 +17,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             }
         }
 
-        public static T DeserializeFromXml<T>(string data) where T : class
+        public static T DeserializeFromXml<T>(this string data) where T : class
         {
             XmlSerializer ser = new XmlSerializer(typeof(T));
             using (TextReader reader = new StringReader(data))
@@ -26,7 +26,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             }
         }
 
-        public static string SerializeToJson<T>(T data) where T : class 
+        public static string SerializeToJson<T>(this T data) where T : class 
         {
             return JsonConvert.SerializeObject(data);
         }
