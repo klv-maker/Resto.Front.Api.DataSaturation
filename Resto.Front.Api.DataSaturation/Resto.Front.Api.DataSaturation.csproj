@@ -4,6 +4,7 @@
 		<TargetFramework>net472</TargetFramework>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Resto.Front.Api.V8" Version="8.7.6032" />
 	</ItemGroup>
     <ItemGroup>
@@ -17,6 +18,11 @@
         <Reference Include="System.Xml" />
   </ItemGroup>
     <ItemGroup>
-      <Folder Include="Interfaces\" />
+      <None Update="Manifest.xml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Settings\Settings.xml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
  </Project>

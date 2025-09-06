@@ -1,4 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Settings>
-	<CubicVision></CubicVision>
+	<Listener>
+		<AddressApi>http://localhost</AddressApi>
+		<Port>8085</Port>
+	</Listener>
 </Settings>
