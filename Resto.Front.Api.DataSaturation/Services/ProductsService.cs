@@ -2,58 +2,154 @@
 using Resto.Front.Api.DataSaturation.Entities;
 using Resto.Front.Api.DataSaturation.Helpers;
 using Resto.Front.Api.DataSaturation.Interfaces;
+using Resto.Front.Api.DataSaturation.Settings;
+using Resto.Front.Api.UI;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Threading;
+using System.Threading.Tasks;
+using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
+
 
 namespace Resto.Front.Api.DataSaturation.Services
 {
     public class ProductsService : IProductsService
     {
         private readonly CompositeDisposable subscriptions = new CompositeDisposable();
-        private ConcurrentDictionary<Guid, ProductInfo> products = new ConcurrentDictionary<Guid, ProductInfo>();
-        private object locker = new object();
+        private CancellationTokenSource cancellationSource;
+        private bool isDisposed = false;
+        private int isStartedUpdateProducts = 0;
         public ProductsService() 
         {
+            cancellationSource = new CancellationTokenSource();
             subscriptions.Add(PluginContext.Notifications.ProductChanged.Subscribe(ProductChanged));
+            subscriptions.Add(PluginContext.Operations.AddButtonToPluginsMenu("DataSaturationPlugin.Обмен", UpdateProducts));
         }
+
+        public void UpdateProducts((IViewManager vm, IReceiptPrinter printer) obj)
+        {
+            try
+            {
+                if (Interlocked.CompareExchange(ref isStartedUpdateProducts, 1, 0) == 1)
+                {
+                    obj.vm.ShowOkPopup("Обмен", "Обмен уже был начат");
+                    return;
+                }
+                Task.Run(async () => await UpdateProducts(), cancellationSource.Token);
+                obj.vm.ShowOkPopup("Обмен", "Обмен начат");
+            }
+            catch (Exception ex)
+            {
+                obj.vm.ShowOkPopup("Обмен", $"{ex}");
+            }
+        }
+
 
         public void Dispose()
         {
+            if (isDisposed)
+                return;
+
+            isDisposed = true;
+            cancellationSource?.Cancel();
+            cancellationSource?.Dispose();
             subscriptions?.Dispose();
         }
 
         private void ProductChanged(IProduct product)
         {
-            //TODO: баркод в офисе был пустой, возможно нужно будет поменять на него или сменить название параметра в ProductInfo
-            var code = product.Number;
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Get changed product id = {product.Id} with empty number!");
-                return; 
-            }
+            if (isDisposed)
+                return;
+            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Get changed product id = {product.Id} {product.Number} price = {product.Price}");
 
-            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Get changed product id = {product.Id} number = {code} price = {product.Price}");
-            var dataToSend = new ProductInfo{ barcode = code, price = product.Price };
-            //блокируем доступ, так как может прийти обновление продукта, а мы получаем данные
-            lock (locker)
-                products.AddOrUpdate(product.Id, dataToSend, (id, data) => dataToSend );
+            var productInfo = product.GetProductInfoShort();
+            if (productInfo is null || !productInfo.Any())
+                return;
+
+            var toSendData = new ProductInfoShortApi();
+            toSendData.AddValuesToSendData(productInfo);
+
+            Task.Run(async () => await Send(toSendData), cancellationSource.Token);
         }
 
-        public string GetProductsChangedInJson()
+        private async Task UpdateProducts()
         {
-            //пока не получили все данные не даем возможность добавлять данные в коллекцию
-            lock (locker)
+            if (isDisposed)
+                return;
+
+            var products = PluginContext.Operations.GetActiveProducts();
+            Dictionary<string, IProduct> productsDict = new Dictionary<string, IProduct>();
+            foreach (var product in products)
             {
-                var toReturnData = new List<ProductInfo>();
-                foreach (var product in products)
+                if (cancellationSource.IsCancellationRequested) 
+                    return;
+
+                if (productsDict.ContainsKey(product.Number))
+                    continue;
+
+                if (product.Price <= 0)
+                    continue;
+
+                productsDict.Add(product.Number, product);
+            }
+            var toSendData = new ProductInfoShortApi();
+            toSendData.items = new List<ProductInfoShort>();
+            foreach (var product in productsDict)
+            {
+                if (cancellationSource.IsCancellationRequested)
+                    return;
+
+                var productInfo = product.Value.GetProductInfoShort();
+                if (productInfo is null && !productInfo.Any())
+                    continue;
+
+                toSendData.AddValuesToSendData(productInfo);
+            }
+            await Send(toSendData);
+        }
+
+        private async Task Send(ProductInfoShortApi toSendData)
+        {
+            if (isDisposed)
+                return;
+
+            List<Task> tasks = new List<Task>();
+            foreach (var address in Settings.Settings.Instance().AdressesApi)
+            {
+                tasks.Add(SendProducts(address, toSendData));
+            }
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task SendProducts(string url, ProductInfoShortApi toSendData)
+        {
+            if (isDisposed)
+                return;
+
+            try
+            {
+                var client = new JsonRpcClient(url);
+                PluginContext.Log.Info(url);
+                var response = await client.SendRequestAsync("updateProducts", cancellationSource.Token, new object[] { toSendData });
+                PluginContext.Log.Info(response);
+                Interlocked.Exchange(ref isStartedUpdateProducts, 0);
+            }
+            catch (TaskCanceledException ex) 
+            {
+                if (ex.CancellationToken == cancellationSource.Token)
+                    PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(SendProducts)}] Get task cancelled exception");
+                else
                 {
-                    toReturnData.Add(product.Value);
+                    PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(SendProducts)}] Get task timeout exception");
                 }
-                products.Clear();
-                return toReturnData.SerializeToJson();
+                Interlocked.Exchange(ref isStartedUpdateProducts, 0);
+            }
+            catch (Exception ex)
+            {
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(SendProducts)}] Get task exception {ex}");
+                Interlocked.Exchange(ref isStartedUpdateProducts, 0);
             }
         }
     }

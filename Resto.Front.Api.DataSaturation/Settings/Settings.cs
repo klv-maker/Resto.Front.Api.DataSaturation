@@ -1,5 +1,7 @@
 ﻿using Resto.Front.Api.DataSaturation.Helpers;
 using Resto.Front.Api.DataSaturation.Interfaces;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -9,16 +11,20 @@ namespace Resto.Front.Api.DataSaturation.Settings
     {
         private static ISettings instance;
         private Settings() { }
+        private static string ConfigFileName = "Settings.xml";
+        private const string baseServerUrl = "http://192.168.0.227:8080/json.rpc";
+        private static string FilePath
+        {
+            get { return Path.GetFullPath(Path.Combine(PluginContext.Integration.GetConfigsDirectoryPath(), ConfigFileName)); }
+        }
         /// <summary>
         /// instance for work with settings
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="FileNotFoundException"></exception>
         public static ISettings Instance()
         {
             if (instance == null)
             {
-                var settingsFilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetAssembly(typeof(Settings)).Location), "Settings", "Settings.xml");
+                var settingsFilePath = FilePath;
                 if (File.Exists(settingsFilePath))
                 {
                     var settingsXml = File.ReadAllText(settingsFilePath);
@@ -26,12 +32,38 @@ namespace Resto.Front.Api.DataSaturation.Settings
                     instance = SerializeHelper.DeserializeFromXml<Settings>(settingsXml);
                 }
                 else
-                {
-                    PluginContext.Log.Error($"File settings not found in path {settingsFilePath}");
-                    throw new FileNotFoundException(settingsFilePath);
-                }
+                    CreateSettingsIfNotExists();
             }
             return instance;
+        }
+
+        private static void CreateSettingsIfNotExists()
+        {
+            var settings = new Settings();
+            settings.AdressesApi = new List<string>() { baseServerUrl };
+            settings.Save();
+            instance = settings;
+        }
+
+        private void Save()
+        {
+            try
+            {
+                PluginContext.Log.InfoFormat("Saving config to {0}", FilePath);
+                this.SerializeToFileXml(FilePath);
+                instance = this;
+            }
+            catch (Exception e)
+            {
+                PluginContext.Log.Error("Failed to save config.", e);
+            }
+        }
+
+        public void Update(List<string> addresses)
+        {
+            PluginContext.Log.Info($"Start update settings with values {string.Join(",", addresses)}");
+            this.AdressesApi = addresses;
+            Save();
         }
     }
 
@@ -44,59 +76,23 @@ namespace Resto.Front.Api.DataSaturation.Settings
     public partial class Settings : ISettings
     {
 
-        private SettingsListener listenerField;
+        private List<string> adressesApiField;
 
         /// <remarks/>
-        public SettingsListener Listener
+        [System.Xml.Serialization.XmlArrayItemAttribute("Address", IsNullable = false)]
+        public List<string> AdressesApi
         {
             get
             {
-                return this.listenerField;
+                return this.adressesApiField;
             }
             set
             {
-                this.listenerField = value;
+                this.adressesApiField = value;
             }
         }
     }
 
-    /// <remarks/>
-    [System.SerializableAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class SettingsListener
-    {
-
-        private string addressApiField;
-
-        private string portField;
-
-        /// <remarks/>
-        public string AddressApi
-        {
-            get
-            {
-                return this.addressApiField;
-            }
-            set
-            {
-                this.addressApiField = value;
-            }
-        }
-
-        /// <remarks/>
-        public string Port
-        {
-            get
-            {
-                return this.portField;
-            }
-            set
-            {
-                this.portField = value;
-            }
-        }
-    }
 
 
 }

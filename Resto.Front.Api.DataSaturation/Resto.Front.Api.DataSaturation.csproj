@@ -2,10 +2,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net472</TargetFramework>
+		<UseWPF>true</UseWPF>
+    <PlatformTarget>x86</PlatformTarget>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Resto.Front.Api.V8" Version="8.7.6032" />
+		<PackageReference Include="System.Runtime" Version="4.3.1" />
 	</ItemGroup>
     <ItemGroup>
         <Reference Include="System" />
@@ -19,9 +23,6 @@
   </ItemGroup>
     <ItemGroup>
       <None Update="Manifest.xml">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Settings\Settings.xml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

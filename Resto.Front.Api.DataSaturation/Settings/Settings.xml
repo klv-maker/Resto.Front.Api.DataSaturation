@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Settings>
-	<Listener>
-		<AddressApi>http://localhost</AddressApi>
-		<Port>8085</Port>
-	</Listener>
+	<AdressesApi>
+		<Address>http://192.168.0.227:8080/json.rpc</Address>
+		<Address>http://192.168.0.227:8080/json.rpc</Address>
+	</AdressesApi>
 </Settings>

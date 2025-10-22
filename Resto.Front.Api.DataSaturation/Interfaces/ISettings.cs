@@ -1,9 +1,10 @@
-﻿using Resto.Front.Api.DataSaturation.Settings;
+﻿using System.Collections.Generic;
 
 namespace Resto.Front.Api.DataSaturation.Interfaces
 {
     public interface ISettings
     {
-        SettingsListener Listener { get; set; }
+        List<string> AdressesApi { get; set; }
+        void Update(List<string> addresses);
     }
 }

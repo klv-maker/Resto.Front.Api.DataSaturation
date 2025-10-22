@@ -11,17 +11,18 @@ namespace Resto.Front.Api.DataSaturation
         //ид модуля так-то для плагина сторонней оплаты, но это мы просто нацелены на дальнейшую интеграцию с iikoCard
         private const int ModuleId = 21016318;
         private readonly IProductsService productsService;
-        private readonly IHttpServerListener httpServerListener;
+        private readonly ISettingsService settingsService;
+
         public DataSaturationPlugin()
         {
             productsService = new ProductsService();
-            httpServerListener = new HttpServerListener(Settings.Settings.Instance().Listener, productsService);
+            settingsService = new SettingsService();
         }
 
         public void Dispose()
         {
             productsService.Dispose();
-            httpServerListener.Dispose();
+            settingsService.Dispose();
         }
     }
 }

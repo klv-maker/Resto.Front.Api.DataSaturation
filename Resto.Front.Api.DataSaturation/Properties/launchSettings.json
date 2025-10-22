@@ -2,7 +2,8 @@
   "profiles": {
     "Профиль 1": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\iiko\\iikoRMS\\Front.Net\\Resto.Front.Api.Host.exe"
+      "executablePath": "C:\\Program Files\\iiko\\iikoRMS\\Front.Net\\Resto.Front.Api.Host.exe",
+      "commandLineArgs": "/a=C:\\Users\\Kagetsy\\source\\repos\\Resto.Front.Api.DataSaturation\\Resto.Front.Api.DataSaturation\\bin\\Debug\\net472\\Resto.Front.Api.DataSaturation.dll /c=Resto.Front.Api.DataSaturation.DataSaturationPlugin /m=21016318 /l=C:\\Users\\Kagetsy\\source\\repos\\Resto.Front.Api.DataSaturation\\Resto.Front.Api.DataSaturation\\bin\\Debug\\net472\\debug.log"
     }
   }
 }
