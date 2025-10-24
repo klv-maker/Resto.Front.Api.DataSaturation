@@ -2,6 +2,7 @@
 using Resto.Front.Api.DataSaturation.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Resto.Front.Api.DataSaturation.Helpers
 {
@@ -40,11 +41,19 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             return productInfo;
         }
 
-        public static List<ProductInfoShort> GetProductInfoShort(this IProduct product) 
+        public static List<ProductInfoShort> GetProductInfoShort(this IProduct product, IList<ProductAndSize> stopList = null) 
         { 
             List<ProductInfoShort> productInfoShorts = new List<ProductInfoShort>();
             if (product is null)
                 return productInfoShorts;
+              bool inStopList = false;
+            if (stopList != null)
+            {
+                if (stopList.Any(_ => _.Product.Id == product.Id))
+                {
+                    inStopList = true;
+                }
+            }
 
             var prod = product.GetProductInfo();
             if (prod.productSize != null)
@@ -55,7 +64,8 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                     {
                         id = $"{prod.barcode}_{item.name}",
                         name = $"{prod.name}_{item.name}",
-                        price = item.price
+                        price = item.price,
+                        inStopList = inStopList
                     };
                     productInfoShorts.Add(productInfoWithSize);
                     PluginContext.Log.Info(productInfoWithSize.SerializeToJson());
@@ -67,10 +77,49 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             {
                 id = prod.barcode,
                 name = prod.name,
-                price = prod.price
+                price = prod.price,
+                inStopList = inStopList
             };
             productInfoShorts.Add(productInfo);
 			PluginContext.Log.Info(productInfo.SerializeToJson());
+            return productInfoShorts;
+        }
+
+        public static List<ProductInfoShort> GetProductInfoByStopList(this IList<ProductAndSize> stopList)
+        {
+            List<ProductInfoShort> productInfoShorts = new List<ProductInfoShort>();
+            ProductInfo productInfo = new ProductInfo();
+            ProductSize productSize = new ProductSize();
+            foreach (var prod in stopList)
+            {
+                productInfo = prod.Product.GetProductInfo();
+                if (productInfo.productSize != null)
+                {
+                    productSize = productInfo.productSize.FirstOrDefault(_ => _.name == prod.ProductSize.Name);
+                    ProductInfoShort productInfoWithSize = new ProductInfoShort()
+                    {
+                        id = $"{productInfo.barcode}_{productSize.name}",
+                        name = $"{productInfo.name}_{productSize.name}",
+                        price = productSize.price,
+                        inStopList = true
+                    };
+
+                    productInfoShorts.Add(productInfoWithSize);
+                    PluginContext.Log.Info(productInfoWithSize.SerializeToJson());
+                }
+                else
+                {
+                    ProductInfoShort productInfoShort = new ProductInfoShort()
+                    {
+                        id = productInfo.barcode,
+                        name = productInfo.name,
+                        price = productInfo.price,
+                        inStopList = true   
+                    };
+                    productInfoShorts.Add(productInfoShort);
+                    PluginContext.Log.Info(productInfoShort.SerializeToJson());
+                }
+            }
             return productInfoShorts;
         }
 

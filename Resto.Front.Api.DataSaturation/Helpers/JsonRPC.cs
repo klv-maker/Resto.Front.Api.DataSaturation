@@ -38,6 +38,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 };
 
                 string jsonRequest = request.SerializeToJson();
+                PluginContext.Log.Info(jsonRequest);
 
                 var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
 

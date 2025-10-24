@@ -79,6 +79,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (isDisposed)
                 return;
 
+            var stopList = GetStopLists();
             var products = PluginContext.Operations.GetActiveProducts();
             Dictionary<string, IProduct> productsDict = new Dictionary<string, IProduct>();
             foreach (var product in products)
@@ -101,12 +102,13 @@ namespace Resto.Front.Api.DataSaturation.Services
                 if (cancellationSource.IsCancellationRequested)
                     return;
 
-                var productInfo = product.Value.GetProductInfoShort();
+                var productInfo = product.Value.GetProductInfoShort(stopList);
                 if (productInfo is null && !productInfo.Any())
                     continue;
 
                 toSendData.AddValuesToSendData(productInfo);
             }
+            toSendData.currentStopList = stopList.GetProductInfoByStopList();
             await Send(toSendData);
         }
 
@@ -151,6 +153,22 @@ namespace Resto.Front.Api.DataSaturation.Services
                 PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(SendProducts)}] Get task exception {ex}");
                 Interlocked.Exchange(ref isStartedUpdateProducts, 0);
             }
+        }
+
+
+        public IList<ProductAndSize> GetStopLists()
+        {
+            PluginContext.Log.Info("Запущен метод GetStopLists...");
+            var list = new List<ProductAndSize>();
+            var products = PluginContext.Operations.GetStopListProductsRemainingAmounts();
+            foreach (var item in products)
+            {
+                var product = item.Key;
+                PluginContext.Log.Info(product.SerializeToJson());
+                list.Add(product);
+            }
+            return list;
+
         }
     }
 }
