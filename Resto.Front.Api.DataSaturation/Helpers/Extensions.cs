@@ -53,7 +53,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 {
                     ProductInfoShort productInfoWithSize = new ProductInfoShort()
                     {
-                        id = $"{prod.id}_{prod.barcode}_{item.name}",
+                        id = $"{prod.barcode}_{item.name}",
                         name = $"{prod.name}_{item.name}",
                         price = item.price
                     };
@@ -65,11 +65,12 @@ namespace Resto.Front.Api.DataSaturation.Helpers
 
             ProductInfoShort productInfo = new ProductInfoShort()
             {
-                id = $"{prod.id}_{prod.barcode}_{prod.name}",
+                id = prod.barcode,
                 name = prod.name,
                 price = prod.price
             };
             productInfoShorts.Add(productInfo);
+			PluginContext.Log.Info(productInfo.SerializeToJson());
             return productInfoShorts;
         }
 
