@@ -89,8 +89,8 @@ namespace Resto.Front.Api.DataSaturation.Services
                 if (productsDict.ContainsKey(product.Number))
                     continue;
 
-                if (product.Price <= 0)
-                    continue;
+                //if (product.Price <= 0)
+                    //continue;
 
                 productsDict.Add(product.Number, product);
             }

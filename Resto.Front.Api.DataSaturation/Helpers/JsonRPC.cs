@@ -12,7 +12,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
         {
             public string jsonrpc { get; set; } = "2.0";
             public string method { get; set; }
-            public object[] @params { get; set; }
+            public object @params { get; set; }
             public Guid id { get; set; }
         }
 
