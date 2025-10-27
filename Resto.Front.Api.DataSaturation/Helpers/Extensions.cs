@@ -41,25 +41,32 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             return productInfo;
         }
 
-        public static List<ProductInfoShort> GetProductInfoShort(this IProduct product, IList<ProductAndSize> stopList = null) 
+        public static List<ProductInfoShort> GetProductInfoShort(this IProduct product, Dictionary<ProductAndSize, decimal> stopList = null) 
         { 
             List<ProductInfoShort> productInfoShorts = new List<ProductInfoShort>();
             if (product is null)
                 return productInfoShorts;
               bool inStopList = false;
-            if (stopList != null)
+
+            var prod = product.GetProductInfo();
+            if (stopList != null && (prod.productSize == null || prod.productSize.Count == 0))
             {
-                if (stopList.Any(_ => _.Product.Id == product.Id))
+                if (stopList.Any(_ => _.Key.Product.Id == product.Id) )
                 {
                     inStopList = true;
                 }
             }
-
-            var prod = product.GetProductInfo();
             if (prod.productSize != null)
             {
                 foreach (var item in prod.productSize)
                 {
+                    if (stopList != null)
+                    {
+                        if (stopList.Any(_ => _.Key.Product == product && _.Key.ProductSize.Name == item.name))
+                        {
+                            inStopList = true;
+                        }
+                    }
                     ProductInfoShort productInfoWithSize = new ProductInfoShort()
                     {
                         id = $"{prod.barcode}_{item.name}",
@@ -85,12 +92,12 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             return productInfoShorts;
         }
 
-        public static List<ProductInfoShort> GetProductInfoByStopList(this IList<ProductAndSize> stopList)
+        public static List<ProductInfoShort> GetProductInfoByStopList(this Dictionary<ProductAndSize, decimal> stopList)
         {
             List<ProductInfoShort> productInfoShorts = new List<ProductInfoShort>();
             ProductInfo productInfo = new ProductInfo();
             ProductSize productSize = new ProductSize();
-            foreach (var prod in stopList)
+            foreach (var prod in stopList.Keys)
             {
                 productInfo = prod.Product.GetProductInfo();
                 if (productInfo.productSize != null)
@@ -130,6 +137,9 @@ namespace Resto.Front.Api.DataSaturation.Helpers
 
             if (toSendData.items is null)
                 toSendData.items = new List<ProductInfoShort>();
+
+            if (toSendData.currentStopList == null) 
+                toSendData.currentStopList = new List<ProductInfoShort>();
 
             foreach (var item in productInfo)
             {

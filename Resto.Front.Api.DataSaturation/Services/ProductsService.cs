@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
@@ -25,6 +26,7 @@ namespace Resto.Front.Api.DataSaturation.Services
         {
             cancellationSource = new CancellationTokenSource();
             subscriptions.Add(PluginContext.Notifications.ProductChanged.Subscribe(ProductChanged));
+            subscriptions.Add(PluginContext.Notifications.StopListProductsRemainingAmountsChanged.Subscribe(onChangeStopList));
             subscriptions.Add(PluginContext.Operations.AddButtonToPluginsMenu("DataSaturationPlugin.Обмен", UpdateProducts));
         }
 
@@ -46,6 +48,11 @@ namespace Resto.Front.Api.DataSaturation.Services
             }
         }
 
+        public void onChangeStopList (VoidValue voidValue)
+        {
+            PluginContext.Log.Info("Вызван метод onChangeStopList...");
+            UpdateProducts();
+        }
 
         public void Dispose()
         {
@@ -156,19 +163,16 @@ namespace Resto.Front.Api.DataSaturation.Services
         }
 
 
-        public IList<ProductAndSize> GetStopLists()
+        public Dictionary<ProductAndSize, decimal> GetStopLists()
         {
             PluginContext.Log.Info("Запущен метод GetStopLists...");
             var list = new List<ProductAndSize>();
             var products = PluginContext.Operations.GetStopListProductsRemainingAmounts();
             foreach (var item in products)
             {
-                var product = item.Key;
-                PluginContext.Log.Info(product.SerializeToJson());
-                list.Add(product);
+                PluginContext.Log.Info(item.Key.SerializeToJson());
             }
-            return list;
-
+            return products;
         }
     }
 }
