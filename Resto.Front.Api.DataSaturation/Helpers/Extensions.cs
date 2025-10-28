@@ -1,6 +1,7 @@
 ﻿using Resto.Front.Api.Data.Assortment;
 using Resto.Front.Api.DataSaturation.Entities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -41,7 +42,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             return productInfo;
         }
 
-        public static List<ProductInfoShort> GetProductInfoShort(this IProduct product, Dictionary<ProductAndSize, decimal> stopList = null) 
+        public static List<ProductInfoShort> GetProductInfoShort(this IProduct product, ProductAndSize stopList = null) 
         { 
             List<ProductInfoShort> productInfoShorts = new List<ProductInfoShort>();
             if (product is null)
@@ -51,10 +52,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             var prod = product.GetProductInfo();
             if (stopList != null && (prod.productSize == null || prod.productSize.Count == 0))
             {
-                if (stopList.Any(_ => _.Key.Product.Id == product.Id) )
-                {
                     inStopList = true;
-                }
             }
             if (prod.productSize != null)
             {
@@ -62,7 +60,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 {
                     if (stopList != null)
                     {
-                        if (stopList.Any(_ => _.Key.Product == product && _.Key.ProductSize.Name == item.name))
+                        if (stopList.ProductSize.Name == item.name)
                         {
                             inStopList = true;
                         }
@@ -92,18 +90,19 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             return productInfoShorts;
         }
 
-        public static List<ProductInfoShort> GetProductInfoByStopList(this Dictionary<ProductAndSize, decimal> stopList)
+        public static List<ProductInfoShort> GetProductInfoByStopList(this ConcurrentDictionary<Guid, ProductAndSize> stopList)
         {
             List<ProductInfoShort> productInfoShorts = new List<ProductInfoShort>();
             ProductInfo productInfo = new ProductInfo();
             ProductSize productSize = new ProductSize();
-            foreach (var prod in stopList.Keys)
+            foreach (var prod in stopList.Values)
             {
+                ProductInfoShort productInfoShort;
                 productInfo = prod.Product.GetProductInfo();
                 if (productInfo.productSize != null)
                 {
-                    productSize = productInfo.productSize.FirstOrDefault(_ => _.name == prod.ProductSize.Name);
-                    ProductInfoShort productInfoWithSize = new ProductInfoShort()
+                    productSize = productInfo.productSize.First(_ => string.Equals(_.name, prod.ProductSize.Name, StringComparison.OrdinalIgnoreCase));
+                    productInfoShort = new ProductInfoShort()
                     {
                         id = $"{productInfo.barcode}_{productSize.name}",
                         name = $"{productInfo.name}_{productSize.name}",
@@ -111,21 +110,20 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                         inStopList = true
                     };
 
-                    productInfoShorts.Add(productInfoWithSize);
-                    PluginContext.Log.Info(productInfoWithSize.SerializeToJson());
+                    PluginContext.Log.Info(productInfoShort.SerializeToJson());
                 }
                 else
                 {
-                    ProductInfoShort productInfoShort = new ProductInfoShort()
+                    productInfoShort = new ProductInfoShort()
                     {
                         id = productInfo.barcode,
                         name = productInfo.name,
                         price = productInfo.price,
                         inStopList = true   
                     };
-                    productInfoShorts.Add(productInfoShort);
                     PluginContext.Log.Info(productInfoShort.SerializeToJson());
                 }
+                productInfoShorts.Add(productInfoShort);
             }
             return productInfoShorts;
         }

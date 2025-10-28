@@ -5,6 +5,7 @@ using Resto.Front.Api.DataSaturation.Interfaces;
 using Resto.Front.Api.DataSaturation.Settings;
 using Resto.Front.Api.UI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
@@ -22,11 +23,12 @@ namespace Resto.Front.Api.DataSaturation.Services
         private CancellationTokenSource cancellationSource;
         private bool isDisposed = false;
         private int isStartedUpdateProducts = 0;
+        private ConcurrentDictionary<Guid, ProductAndSize> stopList = new ConcurrentDictionary<Guid, ProductAndSize>();
         public ProductsService() 
         {
             cancellationSource = new CancellationTokenSource();
             subscriptions.Add(PluginContext.Notifications.ProductChanged.Subscribe(ProductChanged));
-            subscriptions.Add(PluginContext.Notifications.StopListProductsRemainingAmountsChanged.Subscribe(onChangeStopList));
+            subscriptions.Add(PluginContext.Notifications.StopListProductsRemainingAmountsChanged.Subscribe(OnChangeStopList));
             subscriptions.Add(PluginContext.Operations.AddButtonToPluginsMenu("DataSaturationPlugin.Обмен", UpdateProducts));
         }
 
@@ -48,12 +50,40 @@ namespace Resto.Front.Api.DataSaturation.Services
             }
         }
 
-        public void onChangeStopList (VoidValue voidValue)
+        public void OnChangeStopList(VoidValue voidValue)
         {
-            PluginContext.Log.Info("Вызван метод onChangeStopList...");
-            UpdateProducts();
+            PluginContext.Log.Info("Вызван метод OnChangeStopList...");
+            UpdateProductsByChangeStopList();
         }
 
+        async public Task UpdateProductsByChangeStopList()
+        {
+            var stopListOld = stopList;
+            GetStopLists();
+            var toSendData = new ProductInfoShortApi();
+            var productInfo = new List<ProductInfoShort>();
+
+            foreach (var item in stopList)
+            {
+                if (!stopListOld.ContainsKey(item.Key))
+                {
+                    productInfo = item.Value.Product.GetProductInfoShort(item.Value);
+                    toSendData.AddValuesToSendData(productInfo);
+                }
+            }
+            foreach (var item in stopListOld)
+            {
+                if (!stopList.ContainsKey(item.Key))
+                {
+                    productInfo = item.Value.Product.GetProductInfoShort();
+                    toSendData.AddValuesToSendData(productInfo);
+                }
+            }
+            toSendData.currentStopList = stopList.GetProductInfoByStopList();
+            PluginContext.Log.Info(toSendData.SerializeToJson());
+            await Send(toSendData);
+        }
+       
         public void Dispose()
         {
             if (isDisposed)
@@ -86,7 +116,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (isDisposed)
                 return;
 
-            var stopList = GetStopLists();
+            stopList = GetStopLists();
             var products = PluginContext.Operations.GetActiveProducts();
             Dictionary<string, IProduct> productsDict = new Dictionary<string, IProduct>();
             foreach (var product in products)
@@ -108,8 +138,8 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 if (cancellationSource.IsCancellationRequested)
                     return;
-
-                var productInfo = product.Value.GetProductInfoShort(stopList);
+                var productInStopList = stopList.FirstOrDefault(_ => _.Key == product.Value.Id).Value;
+                var productInfo = product.Value.GetProductInfoShort(productInStopList);
                 if (productInfo is null && !productInfo.Any())
                     continue;
 
@@ -163,16 +193,16 @@ namespace Resto.Front.Api.DataSaturation.Services
         }
 
 
-        public Dictionary<ProductAndSize, decimal> GetStopLists()
+        public ConcurrentDictionary<Guid, ProductAndSize> GetStopLists()
         {
-            PluginContext.Log.Info("Запущен метод GetStopLists...");
-            var list = new List<ProductAndSize>();
-            var products = PluginContext.Operations.GetStopListProductsRemainingAmounts();
-            foreach (var item in products)
+            var stopListDict = PluginContext.Operations.GetStopListProductsRemainingAmounts();
+            stopList = new ConcurrentDictionary<Guid, ProductAndSize>();
+            foreach (var item in stopListDict)
             {
                 PluginContext.Log.Info(item.Key.SerializeToJson());
+                stopList.TryAdd(item.Key.Product.Id, item.Key);
             }
-            return products;
+            return stopList;
         }
     }
 }
