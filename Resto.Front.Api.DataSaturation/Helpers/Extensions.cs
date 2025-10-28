@@ -60,7 +60,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 {
                     if (stopList != null)
                     {
-                        if (stopList.ProductSize.Name == item.name)
+                        if (string.Equals(stopList.ProductSize.Name, item.name, StringComparison.OrdinalIgnoreCase))
                         {
                             inStopList = true;
                         }
