@@ -5,9 +5,11 @@ using Resto.Front.Api.DataSaturation.Interfaces;
 using Resto.Front.Api.DataSaturation.Settings;
 using Resto.Front.Api.UI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
@@ -21,10 +23,12 @@ namespace Resto.Front.Api.DataSaturation.Services
         private CancellationTokenSource cancellationSource;
         private bool isDisposed = false;
         private int isStartedUpdateProducts = 0;
+        private ConcurrentDictionary<Guid, ProductAndSize> stopList = new ConcurrentDictionary<Guid, ProductAndSize>();
         public ProductsService() 
         {
             cancellationSource = new CancellationTokenSource();
             subscriptions.Add(PluginContext.Notifications.ProductChanged.Subscribe(ProductChanged));
+            subscriptions.Add(PluginContext.Notifications.StopListProductsRemainingAmountsChanged.Subscribe(OnChangeStopList));
             subscriptions.Add(PluginContext.Operations.AddButtonToPluginsMenu("DataSaturationPlugin.Обмен", UpdateProducts));
         }
 
@@ -46,7 +50,40 @@ namespace Resto.Front.Api.DataSaturation.Services
             }
         }
 
+        public void OnChangeStopList(VoidValue voidValue)
+        {
+            PluginContext.Log.Info("Вызван метод OnChangeStopList...");
+            UpdateProductsByChangeStopList();
+        }
 
+        async public Task UpdateProductsByChangeStopList()
+        {
+            var stopListOld = stopList;
+            GetStopLists();
+            var toSendData = new ProductInfoShortApi();
+            var productInfo = new List<ProductInfoShort>();
+
+            foreach (var item in stopList)
+            {
+                if (!stopListOld.ContainsKey(item.Key))
+                {
+                    productInfo = item.Value.Product.GetProductInfoShort(item.Value);
+                    toSendData.AddValuesToSendData(productInfo);
+                }
+            }
+            foreach (var item in stopListOld)
+            {
+                if (!stopList.ContainsKey(item.Key))
+                {
+                    productInfo = item.Value.Product.GetProductInfoShort();
+                    toSendData.AddValuesToSendData(productInfo);
+                }
+            }
+            toSendData.currentStopList = stopList.GetProductInfoByStopList();
+            PluginContext.Log.Info(toSendData.SerializeToJson());
+            await Send(toSendData);
+        }
+       
         public void Dispose()
         {
             if (isDisposed)
@@ -79,6 +116,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (isDisposed)
                 return;
 
+            stopList = GetStopLists();
             var products = PluginContext.Operations.GetActiveProducts();
             Dictionary<string, IProduct> productsDict = new Dictionary<string, IProduct>();
             foreach (var product in products)
@@ -100,13 +138,14 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 if (cancellationSource.IsCancellationRequested)
                     return;
-
-                var productInfo = product.Value.GetProductInfoShort();
+                var productInStopList = stopList.FirstOrDefault(_ => _.Key == product.Value.Id).Value;
+                var productInfo = product.Value.GetProductInfoShort(productInStopList);
                 if (productInfo is null && !productInfo.Any())
                     continue;
 
                 toSendData.AddValuesToSendData(productInfo);
             }
+            toSendData.currentStopList = stopList.GetProductInfoByStopList();
             await Send(toSendData);
         }
 
@@ -151,6 +190,21 @@ namespace Resto.Front.Api.DataSaturation.Services
                 PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(SendProducts)}] Get task exception {ex}");
                 Interlocked.Exchange(ref isStartedUpdateProducts, 0);
             }
+        }
+
+
+        public ConcurrentDictionary<Guid, ProductAndSize> GetStopLists()
+        {
+            var stopListDict = PluginContext.Operations.GetStopListProductsRemainingAmounts();
+            stopList.Clear();
+            foreach (var item in stopListDict)
+            {
+                if (!stopList.TryAdd(item.Key.Product.Id, item.Key))
+                {
+                    PluginContext.Log.Error($"Ошибка добавления продукта {item.Key.Product.Id}");
+                }
+            }
+            return stopList;
         }
     }
 }
