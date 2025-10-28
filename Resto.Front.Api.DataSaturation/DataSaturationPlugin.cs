@@ -12,17 +12,20 @@ namespace Resto.Front.Api.DataSaturation
         private const int ModuleId = 21016318;
         private readonly IProductsService productsService;
         private readonly ISettingsService settingsService;
+        private readonly IOrdersService ordersService;
 
         public DataSaturationPlugin()
         {
             productsService = new ProductsService();
             settingsService = new SettingsService();
+            ordersService = new OrdersService();
         }
 
         public void Dispose()
         {
             productsService.Dispose();
             settingsService.Dispose();
+            ordersService.Dispose();
         }
     }
 }
