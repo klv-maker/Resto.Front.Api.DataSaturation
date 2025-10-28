@@ -196,11 +196,13 @@ namespace Resto.Front.Api.DataSaturation.Services
         public ConcurrentDictionary<Guid, ProductAndSize> GetStopLists()
         {
             var stopListDict = PluginContext.Operations.GetStopListProductsRemainingAmounts();
-            stopList = new ConcurrentDictionary<Guid, ProductAndSize>();
+            stopList.Clear();
             foreach (var item in stopListDict)
             {
-                PluginContext.Log.Info(item.Key.SerializeToJson());
-                stopList.TryAdd(item.Key.Product.Id, item.Key);
+                if (!stopList.TryAdd(item.Key.Product.Id, item.Key))
+                {
+                    PluginContext.Log.Error($"Ошибка добавления продукта {item.Key.Product.Id}");
+                }
             }
             return stopList;
         }

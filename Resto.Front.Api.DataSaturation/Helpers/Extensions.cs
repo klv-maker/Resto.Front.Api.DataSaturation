@@ -101,12 +101,12 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 productInfo = prod.Product.GetProductInfo();
                 if (productInfo.productSize != null)
                 {
-                    productSize = productInfo.productSize.First(_ => string.Equals(_.name, prod.ProductSize.Name, StringComparison.OrdinalIgnoreCase));
+                    productSize = productInfo.productSize.FirstOrDefault(_ => string.Equals(_.name, prod.ProductSize.Name, StringComparison.OrdinalIgnoreCase));
                     productInfoShort = new ProductInfoShort()
                     {
-                        id = $"{productInfo.barcode}_{productSize.name}",
-                        name = $"{productInfo.name}_{productSize.name}",
-                        price = productSize.price,
+                        id = $"{productInfo.barcode}_{productSize?.name}",
+                        name = $"{productInfo.name}_{productSize?.name}",
+                        price = productSize != null ? productSize.price : 0,
                         inStopList = true
                     };
 
