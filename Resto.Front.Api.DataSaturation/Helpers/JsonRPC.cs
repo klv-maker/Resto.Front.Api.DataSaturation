@@ -16,7 +16,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             public Guid id { get; set; }
         }
 
-        public class JsonRpcClient
+        public class JsonRpcClient : IDisposable
         {
             private readonly HttpClient _httpClient;
             private readonly string _rpcUrl;
@@ -27,6 +27,10 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 _rpcUrl = rpcUrl;
             }
 
+            public void Dispose()
+            {
+                _httpClient.Dispose();
+            }
 
             public async Task<string> SendRequestAsync(string method, CancellationToken cancellationToken, object[] parametrs)
             {
