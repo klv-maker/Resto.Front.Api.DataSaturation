@@ -166,7 +166,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             OrderStatusInfo orderStatus = OrderStatusInfo.start;
             if (eventType == EntityEventType.Updated)
             {
-                if (order.Status == OrderStatus.Closed)
+                if (order.Status == OrderStatus.Bill || order.Status == OrderStatus.Closed)
                     orderStatus = OrderStatusInfo.close;
                 else
                     orderStatus = OrderStatusInfo.update;

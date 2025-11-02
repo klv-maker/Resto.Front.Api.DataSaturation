@@ -21,7 +21,7 @@ namespace Resto.Front.Api.DataSaturation.Services
         private IOrder currentOrder;
         private OrderInfo currentOrderInfo;
         private object lockerCurrentOrder = new object();
-        private object lockerCurrentOrderrInfo = new object();
+        private object lockerCurrentOrderInfo = new object();
 
         public OrdersService()
         {
@@ -100,7 +100,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                     return;
 
                 //блокируем чтобы не перебить
-                lock (lockerCurrentOrderrInfo)
+                lock (lockerCurrentOrderInfo)
                 {
                     if (currentOrderInfo != null && currentOrderInfo.Equals(orderInfo))
                     {
@@ -111,6 +111,10 @@ namespace Resto.Front.Api.DataSaturation.Services
                     currentOrderInfo = orderInfo;
                 }
                 Task.Run(async () => await Send(orderInfo), cancellationSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(StartSendOrderInfo)}] Get task cancelled exception");
             }
             catch (Exception ex)
             {

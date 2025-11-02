@@ -25,8 +25,7 @@ namespace Resto.Front.Api.DataSaturation.Entities
 
         public override int GetHashCode()
         {
-            var json = this.SerializeToJson();
-            return json.GetHashCode();
+            return HashCode.Combine(id, name, price);
         }
     }
 }

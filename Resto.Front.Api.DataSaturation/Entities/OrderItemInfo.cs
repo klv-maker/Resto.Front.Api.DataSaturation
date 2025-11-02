@@ -1,5 +1,4 @@
-﻿using Resto.Front.Api.DataSaturation.Helpers;
-using Resto.Front.Api.DataSaturation.Interfaces;
+﻿using Resto.Front.Api.DataSaturation.Interfaces;
 using System;
 using System.Collections.Generic;
 
@@ -46,8 +45,7 @@ namespace Resto.Front.Api.DataSaturation.Entities
 
         public override int GetHashCode()
         {
-            var json = this.SerializeToJson();
-            return json.GetHashCode();
+            return HashCode.Combine(id, name, deleted, price, modifiers, amount, productSize, printTime);
         }
     }
 }
