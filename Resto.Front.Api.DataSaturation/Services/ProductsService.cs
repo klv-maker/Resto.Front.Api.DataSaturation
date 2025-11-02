@@ -11,6 +11,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
 
 
@@ -57,7 +58,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                     obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {ex.InnerException.Message}");
                     return;
                 }
-                obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {ex.InnerException.Message}");
+                obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {ex.Message}");
             }
             finally
             {
