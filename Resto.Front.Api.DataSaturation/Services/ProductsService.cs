@@ -11,7 +11,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
 
 
@@ -154,6 +153,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                         var toSendData = new ProductInfoShortApi();
                         toSendData.AddValuesToSendData(productInfo);
                         await Send(toSendData);
+                        ModifiersService.Instance.UpdateProductModifierByPriceCategory(product);
                     }
                     catch (Exception ex)
                     {

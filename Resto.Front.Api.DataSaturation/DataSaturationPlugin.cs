@@ -26,6 +26,7 @@ namespace Resto.Front.Api.DataSaturation
             productsService.Dispose();
             settingsService.Dispose();
             ordersService.Dispose();
+            ModifiersService.Instance.Dispose();
         }
     }
 }

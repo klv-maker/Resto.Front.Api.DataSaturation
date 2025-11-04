@@ -3,6 +3,7 @@ using Resto.Front.Api.Data.Common;
 using Resto.Front.Api.Data.Orders;
 using Resto.Front.Api.DataSaturation.Entities;
 using Resto.Front.Api.DataSaturation.Interfaces;
+using Resto.Front.Api.DataSaturation.Services;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -48,10 +49,9 @@ namespace Resto.Front.Api.DataSaturation.Helpers
               bool inStopList = false;
 
             var prod = product.GetProductInfo();
-            if (stopList != null && (prod.productSize == null || prod.productSize.Count == 0))
-            {
-                    inStopList = true;
-            }
+            if (stopList != null && prod.productSize?.Any() != true)
+                inStopList = true;
+
             if (prod.productSize != null)
             {
                 foreach (var item in prod.productSize)
@@ -91,15 +91,13 @@ namespace Resto.Front.Api.DataSaturation.Helpers
         public static List<ProductInfoShort> GetProductInfoByStopList(this ConcurrentDictionary<Guid, ProductAndSize> stopList)
         {
             List<ProductInfoShort> productInfoShorts = new List<ProductInfoShort>();
-            ProductInfo productInfo = new ProductInfo();
-            ProductSize productSize = new ProductSize();
             foreach (var prod in stopList.Values)
             {
                 ProductInfoShort productInfoShort;
-                productInfo = prod.Product.GetProductInfo();
+                var productInfo = prod.Product.GetProductInfo();
                 if (productInfo.productSize != null)
                 {
-                    productSize = productInfo.productSize.FirstOrDefault(_ => string.Equals(_.name, prod.ProductSize.Name, StringComparison.OrdinalIgnoreCase));
+                    var productSize = productInfo.productSize.FirstOrDefault(_ => string.Equals(_.name, prod.ProductSize.Name, StringComparison.OrdinalIgnoreCase));
                     productInfoShort = new ProductInfoShort()
                     {
                         id = $"{productInfo.barcode}_{productSize?.name}",
@@ -192,14 +190,10 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                     };
                     foreach (var modifier in productItem.AssignedModifiers)
                     {
-                        productInfo.modifiers.Add(new OrderModifierInfo
-                        {
-                            id = modifier.Id,
-                            amount = modifier.Amount,
-                            deleted = modifier.Deleted,
-                            name = modifier.Product?.Name,
-                            price = modifier.Price,
-                        });
+                        var groupModifier = ModifiersService.Instance.GetGroupModifierInfo(productItem.Product, modifier.Product.Id);
+                        var modifierItem = GetOrderModifierInfo(modifier, groupModifier);
+                        if (modifierItem != null)
+                            productInfo.modifiers.Add(modifierItem);
                     }
 
                     productInfos.Add(productItem.Id, productInfo);
@@ -208,7 +202,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 if (!(item is IOrderCompoundItem compoundItem))
                     continue;
 
-                AddOrderCompoundItem(productInfos, compoundItem);
+                AddOrderCompoundItem(productInfos, compoundItem, order.PriceCategory);
             }
 
             return new OrderInfo
@@ -221,13 +215,13 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             };
         }
 
-        private static void AddOrderCompoundItem(Dictionary<Guid, OrderItemInfo> productInfos, IOrderCompoundItem compoundItem)
+        private static void AddOrderCompoundItem(Dictionary<Guid, OrderItemInfo> productInfos, IOrderCompoundItem compoundItem, IPriceCategory priceCategory)
         {
             if (compoundItem == null)
                 return;
 
             if (compoundItem.PrimaryComponent != null && !productInfos.ContainsKey(compoundItem.PrimaryComponent.Id))
-                productInfos.Add(compoundItem.PrimaryComponent.Id, FillCompoundComponent(compoundItem, compoundItem.PrimaryComponent));
+                productInfos.Add(compoundItem.PrimaryComponent.Id, FillCompoundComponent(compoundItem, compoundItem.PrimaryComponent, priceCategory));
 
             if (compoundItem.SecondaryComponent is null)
                 return;
@@ -235,23 +229,20 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             if (productInfos.ContainsKey(compoundItem.SecondaryComponent.Id))
                 return;
 
-            productInfos.Add(compoundItem.SecondaryComponent.Id, FillCompoundComponent(compoundItem, compoundItem.SecondaryComponent));
+            productInfos.Add(compoundItem.SecondaryComponent.Id, FillCompoundComponent(compoundItem, compoundItem.SecondaryComponent, priceCategory));
         }
 
-        private static OrderItemInfo FillCompoundComponent(IOrderCompoundItem compoundItem, IOrderCompoundItemComponent component)
+        private static OrderItemInfo FillCompoundComponent(IOrderCompoundItem compoundItem, IOrderCompoundItemComponent component, IPriceCategory priceCategory)
         {
-            var sizeSecondComponent = GetProductSize(component.Product, compoundItem.Size);
+            var sizeComponent = GetProductSize(component.Product, compoundItem.Size);
+
             List<OrderModifierInfo> modifierInfos = new List<OrderModifierInfo>();
             foreach (var modifier in component.Modifiers)
             {
-                modifierInfos.Add(new OrderModifierInfo
-                {
-                    amount = modifier.Amount,
-                    deleted = modifier.Deleted,
-                    id = modifier.Id,
-                    name = modifier.Product?.Name,
-                    price = modifier.Price
-                });
+                var groupModifier = ModifiersService.Instance.GetGroupModifierInfo(component.Product, modifier.Id);
+                var modifierItem = GetOrderModifierInfo(modifier, groupModifier);
+                if (modifierItem != null)
+                    modifierInfos.Add(modifierItem);
             }
             return new OrderItemInfo
             {
@@ -259,8 +250,38 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 deleted = compoundItem.Deleted,
                 name = component.Product?.Name,
                 price = component.Price,
-                productSize = sizeSecondComponent,
-                amount = compoundItem.Amount
+                productSize = sizeComponent,
+                amount = compoundItem.Amount,
+                modifiers = modifierInfos
+            };
+        }
+        private static OrderModifierInfo GetOrderModifierInfo(IOrderModifierItem orderModifierItem, IChildModifier childModifier)
+        {
+            if (childModifier != null)
+            {
+                if (childModifier.DefaultAmount == orderModifierItem.Amount)
+                {
+                    if (!orderModifierItem.Deleted && childModifier.HideIfDefaultAmount)
+                        return null;
+
+                    return new OrderModifierInfo
+                    {
+                        amount = orderModifierItem.Amount,
+                        deleted = orderModifierItem.Deleted,
+                        id = orderModifierItem.Id,
+                        name = orderModifierItem.Product?.Name,
+                        price = orderModifierItem.Price
+                    };
+                }
+            }
+
+            return new OrderModifierInfo
+            {
+                amount = orderModifierItem.Amount,
+                deleted = orderModifierItem.Deleted,
+                id = orderModifierItem.Id,
+                name = orderModifierItem.Product?.Name,
+                price = orderModifierItem.Price
             };
         }
 
