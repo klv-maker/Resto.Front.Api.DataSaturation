@@ -152,7 +152,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 var client = new JsonRpcClient(url);
                 PluginContext.Log.Info(url);
 
-                var response = await client.SendRequestAsync("addEvent", cancellationSource.Token, new object[] { toSendData });
+                var response = await client.SendRequestAsync("addEvent", cancellationSource.Token, toSendData);
                 PluginContext.Log.Info(response);
             }
             catch (TaskCanceledException ex)

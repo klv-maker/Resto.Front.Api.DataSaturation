@@ -32,7 +32,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 _httpClient.Dispose();
             }
 
-            public async Task<string> SendRequestAsync(string method, CancellationToken cancellationToken, object[] parametrs)
+            public async Task<string> SendRequestAsync(string method, CancellationToken cancellationToken, object parametrs)
             {
                 var request = new JsonRpcRequest
                 {
@@ -56,11 +56,12 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             {
                 return await SendRequestAsync(method, cancellationToken, new object[0]);
             }
-
+/*
             public async Task<string> SendRequestAsync<T>(string method, CancellationToken cancellationToken, T parameters)
             {
                 return await SendRequestAsync(method, cancellationToken, new object[] { parameters });
             }
+*/
         }
     }
 }

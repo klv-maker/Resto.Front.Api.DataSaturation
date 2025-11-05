@@ -232,7 +232,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 using (var client = new JsonRpcClient(url))
                 {
                     PluginContext.Log.Info(url);
-                    var response = await client.SendRequestAsync("updateProducts", cancellationSource.Token, new object[] { toSendData }).ConfigureAwait(false);
+                    var response = await client.SendRequestAsync("updateProducts", cancellationSource.Token, toSendData).ConfigureAwait(false);
                     PluginContext.Log.Info(response);
                 }
             }
