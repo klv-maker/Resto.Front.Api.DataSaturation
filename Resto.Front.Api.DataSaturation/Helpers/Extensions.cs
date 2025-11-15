@@ -58,11 +58,12 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 {
                     if (stopList != null)
                     {
-                        foreach (var item1 in stopList.productSize)
+                        foreach (var itemStopList in stopList.productSize)
                         {
-                            if (string.Equals(item1.name, item.name, StringComparison.OrdinalIgnoreCase))
+                            if (string.Equals(itemStopList.name, item.name, StringComparison.OrdinalIgnoreCase))
                             {
                                 inStopList = true;
+                                break;
                             }
                         }
                     }
