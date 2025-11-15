@@ -41,7 +41,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             return productInfo;
         }
 
-        public static List<ProductInfoShort> GetProductInfoShort(this IProduct product, ProductAndSize stopList = null) 
+        public static List<ProductInfoShort> GetProductInfoShort(this IProduct product, ProductInfo stopList = null) 
         { 
             List<ProductInfoShort> productInfoShorts = new List<ProductInfoShort>();
             if (product is null)
@@ -58,9 +58,12 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 {
                     if (stopList != null)
                     {
-                        if (string.Equals(stopList.ProductSize.Name, item.name, StringComparison.OrdinalIgnoreCase))
+                        foreach (var item1 in stopList.productSize)
                         {
-                            inStopList = true;
+                            if (string.Equals(item1.name, item.name, StringComparison.OrdinalIgnoreCase))
+                            {
+                                inStopList = true;
+                            }
                         }
                     }
                     ProductInfoShort productInfoWithSize = new ProductInfoShort()
@@ -76,7 +79,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 return productInfoShorts;
             }
 
-            ProductInfoShort productInfo = new ProductInfoShort()
+                ProductInfoShort productInfo = new ProductInfoShort()
             {
                 id = prod.barcode,
                 name = prod.name,
@@ -88,38 +91,40 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             return productInfoShorts;
         }
 
-        public static List<ProductInfoShort> GetProductInfoByStopList(this ConcurrentDictionary<Guid, ProductAndSize> stopList)
+        public static List<ProductInfoShort> GetProductInfoByStopList(this ConcurrentDictionary<Guid, ProductInfo> stopList)
         {
             List<ProductInfoShort> productInfoShorts = new List<ProductInfoShort>();
             foreach (var prod in stopList.Values)
             {
                 ProductInfoShort productInfoShort;
-                var productInfo = prod.Product.GetProductInfo();
-                if (productInfo.productSize != null)
+                if (prod.productSize != null)
                 {
-                    var productSize = productInfo.productSize.FirstOrDefault(_ => string.Equals(_.name, prod.ProductSize.Name, StringComparison.OrdinalIgnoreCase));
-                    productInfoShort = new ProductInfoShort()
+                    foreach (var item in prod.productSize)
                     {
-                        id = $"{productInfo.barcode}_{productSize?.name}",
-                        name = $"{productInfo.name}_{productSize?.name}",
-                        price = productSize != null ? productSize.price : 0,
-                        inStopList = true
-                    };
+                        productInfoShort = new ProductInfoShort()
+                        {
+                            id = $"{prod.barcode}_{item?.name}",
+                            name = $"{prod.name}_{item?.name}",
+                            price = item != null ? item.price : 0,
+                            inStopList = true
+                        };
 
-                    PluginContext.Log.Info(productInfoShort.SerializeToJson());
+                        PluginContext.Log.Info(productInfoShort.SerializeToJson());
+                        productInfoShorts.Add(productInfoShort);
+                    }
                 }
                 else
                 {
                     productInfoShort = new ProductInfoShort()
                     {
-                        id = productInfo.barcode,
-                        name = productInfo.name,
-                        price = productInfo.price,
+                        id = prod.barcode,
+                        name = prod.name,
+                        price = prod.price,
                         inStopList = true   
                     };
                     PluginContext.Log.Info(productInfoShort.SerializeToJson());
+                    productInfoShorts.Add(productInfoShort);
                 }
-                productInfoShorts.Add(productInfoShort);
             }
             return productInfoShorts;
         }
