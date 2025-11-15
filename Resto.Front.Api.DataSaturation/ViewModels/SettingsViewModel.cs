@@ -80,19 +80,6 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             }
         }
 
-        private ICommand removeCommand;
-        public ICommand RemoveCommand
-        {
-            get
-            {
-                if (removeCommand == null)
-                {
-                    removeCommand = new RelayCommand(Remove);
-                }
-                return removeCommand;
-            }
-        }
-
         private IAddressViewModel selectedAddress;
         public IAddressViewModel SelectedAddress
         {
@@ -127,7 +114,7 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             for (var i = 0; i < settings.AdressesApi.Count; i++)
             {
                 PluginContext.Log.Info($"Trying to add address: {settings.AdressesApi[i]}");
-                AddressViewModels.Add(new AddressViewModel(i + 1, settings.AdressesApi[i]));
+                AddressViewModels.Add(new AddressViewModel(i + 1, settings.AdressesApi[i], Remove));
             }
             SwitchMediaTime = settings.SwitchMediaTime;
         }
@@ -163,12 +150,17 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             if (AddressViewModels is null)
                 AddressViewModels = new ObservableCollection<IAddressViewModel>();
 
-            AddressViewModels.Add(new AddressViewModel(AddressViewModels.Count + 1, ""));
+            AddressViewModels.Add(new AddressViewModel(AddressViewModels.Count + 1, "", Remove));
         }
 
-        public void Remove()
+        public void Remove(IAddressViewModel addressViewModel)
         {
-            AddressViewModels.Remove(SelectedAddress);
+            AddressViewModels.Remove(addressViewModel);
+            //пересчитываем индексы
+            for (var i = 0; i < AddressViewModels.Count; i++)
+            {
+                addressViewModels[i].UpdateIndex(i + 1);
+            }
         }
     }
 }

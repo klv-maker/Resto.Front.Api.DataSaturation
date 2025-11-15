@@ -1,7 +1,9 @@
-﻿using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
+﻿using CommunityToolkit.Mvvm.Input;
+using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace Resto.Front.Api.DataSaturation.ViewModels
 {
@@ -34,6 +36,20 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             }
         }
 
+
+        private ICommand removeCommand;
+        public ICommand RemoveCommand
+        {
+            get
+            {
+                if (removeCommand == null)
+                {
+                    removeCommand = new RelayCommand(Remove);
+                }
+                return removeCommand;
+            }
+        }
+
         public Action CloseAction { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -41,10 +57,22 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
-        public AddressViewModel(int number, string address)
+        private Action<AddressViewModel> removeAction;
+        public AddressViewModel(int number, string address, Action<AddressViewModel> removeAction)
         {
             this.AddressNumber = $"{number}";
             this.AddressApi = address;
+            this.removeAction = removeAction;
+        }
+
+        public void UpdateIndex(int number)
+        {
+            this.AddressNumber = $"{number}";
+        }
+
+        public void Remove()
+        {
+            removeAction?.Invoke(this);
         }
     }
 }

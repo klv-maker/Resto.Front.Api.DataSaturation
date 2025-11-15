@@ -4,8 +4,8 @@ namespace Resto.Front.Api.DataSaturation.Interfaces
 {
     public interface ISettings
     {
-        List<string> AdressesApi { get; set; }
-        int SwitchMediaTime { get; set; }
+        List<string> AdressesApi { get; }
+        int SwitchMediaTime { get; }
         void Update(List<string> addresses, int switchMediaTime);
     }
 }

@@ -39,8 +39,11 @@ namespace Resto.Front.Api.DataSaturation.Settings
 
         private static void CreateSettingsIfNotExists()
         {
-            var settings = new Settings();
-            settings.AdressesApi = new List<string>() { baseServerUrl };
+            var settings = new Settings()
+            {
+                AdressesApi = new List<string>() { baseServerUrl },
+                SwitchMediaTime = 60
+            };
             settings.Save();
             instance = settings;
         }
