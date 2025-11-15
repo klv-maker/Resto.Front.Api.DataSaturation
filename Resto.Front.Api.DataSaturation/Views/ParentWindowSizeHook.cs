@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -92,6 +91,7 @@ namespace Resto.Front.Api.DataSaturation.Views
                     _childWindow.Height = parentRect.Height;
                     _childWindow.Top = parentRect.Top;
                     _childWindow.Left = parentRect.Left;
+                    PluginContext.Log.Info($"[{nameof(ParentWindowSizeHook)}|{nameof(UpdateChildWindowSize)}] Set size for window: Width {_childWindow.Width} height {_childWindow.Height} top {_childWindow.Top} left {_childWindow.Left}");
                 }
                 catch (Exception ex)
                 {

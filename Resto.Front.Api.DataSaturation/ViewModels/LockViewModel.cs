@@ -152,7 +152,10 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                     PluginContext.Log.Error($"[{nameof(LockViewModel)}|{nameof(AddMedia)}] Assets folder is empty");
 
                 currentFileShownIndex = 0;
-                UpdateMedia(filesDictionary.ElementAt(currentFileShownIndex).Key);
+                var filePath = filesDictionary.ElementAt(currentFileShownIndex).Key;
+                PluginContext.Log.Info($"[{nameof(LockViewModel)}|{nameof(AddMedia)}] Trying to show file {filePath}");
+                UpdateMedia(filePath);
+
                 //не стартуем таймер, если у таймера время смены меньше секунды, а то психодел какой-то
                 if (filesDictionary.Count > 1 && switchContentTimer.Interval >= 1000)
                     switchContentTimer.Start();

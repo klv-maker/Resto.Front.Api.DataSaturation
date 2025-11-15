@@ -29,6 +29,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             subscriptions?.Dispose();
             if (settingsViewModel?.CloseAction != null)
                 settingsViewModel.CloseAction();
+            windowOwner?.Dispose();
         }
 
         public void ShowSettingsPlugin((IViewManager viewManager, IReceiptPrinter receiptPrinter) obj)
@@ -36,11 +37,14 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (isDisposed)
                 return;
 
-            windowOwner = new WindowOwner();
-            if (settingsViewModel is null)
-                settingsViewModel = new SettingsViewModel(lockService);
-
-            settingsViewModel.Update(Settings.Settings.Instance());
+            //явно вызываем очистку
+            if (windowOwner != null)
+            {
+                windowOwner.Dispose();
+                windowOwner = null;
+            }
+            windowOwner = new WindowOwner();            
+            settingsViewModel = new SettingsViewModel(lockService, Settings.Settings.Instance());
             windowOwner.ShowDialog<SettingsWindow>(settingsViewModel);
         }
 

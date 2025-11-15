@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 
 namespace Resto.Front.Api.DataSaturation.Views
 {
@@ -19,11 +20,6 @@ namespace Resto.Front.Api.DataSaturation.Views
         private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
         [DllImport("user32.dll")]
         private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-        [DllImport("user32.dll")]
-        private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder lpClassName, int nMaxCount);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
@@ -38,38 +34,73 @@ namespace Resto.Front.Api.DataSaturation.Views
 
         private void EntryPoint<T>(IViewModel viewModel) where T : Window, new()
         {
-            window = WindowCreatorHelper.CreateWindow<T>();
-            window.DataContext = viewModel;
-            window.Loaded += OnLoaded;
+            try 
+            { 
+                window = WindowCreatorHelper.CreateWindow<T>();
+                window.DataContext = viewModel;
+                window.Loaded += OnLoaded;
 
-            viewModel.CloseAction = () => Dispose();
-            window.ShowDialog();
+                viewModel.CloseAction = () => Dispose();
+                window.ShowDialog();
+
+            }
+            catch (Exception ex)
+            {
+                PluginContext.Log.Error($"[{nameof(WindowOwner)}|{nameof(EntryPoint)}] Ошибка при создании окна: {ex}");
+                Dispose();
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs args)
         {
-            var runningProcesses = Process.GetProcessesByName(AppProcessName).SingleOrDefault();
-            if (runningProcesses == null)
-                return;
-
-            var frontHwnd = runningProcesses.MainWindowHandle;
-            var currentHwnd = new WindowInteropHelper(window).Handle;
-            SetParent(currentHwnd, frontHwnd);
-            if (window is LockWindow)
+            try
             {
-                GetWindowRect(frontHwnd, out var parentRect);
-                window.Width = parentRect.Width / 3 * 2;
-                window.Height = parentRect.Height;
-                window.Top = parentRect.Top;
-                window.Left = parentRect.Left;
-                // Запускаем мониторинг изменений размера
-                InitializeSizeHook(frontHwnd);
+                var runningProcesses = Process.GetProcessesByName(AppProcessName).SingleOrDefault();
+                if (runningProcesses == null)
+                    return;
+
+                var frontHwnd = runningProcesses.MainWindowHandle;
+                var currentHwnd = new WindowInteropHelper(window).Handle;
+                SetParent(currentHwnd, frontHwnd);
+                if (window is LockWindow)
+                    SetupLockWindow(frontHwnd);
             }
+            catch (Exception ex)
+            {
+                PluginContext.Log.Error($"[{nameof(WindowOwner)}|{nameof(OnLoaded)}] Ошибка в OnLoaded: {ex}");
+            }
+        }
+
+        private void SetupLockWindow(IntPtr frontHwnd)
+        {
+            if (!GetWindowRect(frontHwnd, out var parentRect))
+            {
+                PluginContext.Log.Error($"[{nameof(WindowOwner)}|{nameof(SetupLockWindow)}] GetWindowRect return false");
+                return;
+            }
+
+            var dpi = VisualTreeHelper.GetDpi(window);
+            window.Width = parentRect.Width / 3 * 2 / dpi.DpiScaleX;
+            window.Height = parentRect.Height / dpi.DpiScaleY;
+            window.Top = parentRect.Top;
+            window.Left = parentRect.Left;
+
+            PluginContext.Log.Info($"[{nameof(WindowOwner)}|{nameof(SetupLockWindow)}] Set size for window: Width {window.Width} height {window.Height} top {window.Top} left {window.Left}");
+            // Запускаем мониторинг изменений размера
+            InitializeSizeHook(frontHwnd);
         }
 
         public void Dispose()
         {
             _sizeHook?.Dispose();
+            if (window is null)
+                return;
+
+            if (window.Dispatcher is null)
+                return;
+            if (window.Dispatcher.HasShutdownStarted)
+                return;
+
             window.Dispatcher.Invoke(() =>
             {
                 if (window.DataContext is IViewModel viewModel)

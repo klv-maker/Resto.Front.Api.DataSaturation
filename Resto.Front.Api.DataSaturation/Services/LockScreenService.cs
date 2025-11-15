@@ -42,6 +42,14 @@ namespace Resto.Front.Api.DataSaturation.Services
                     isOpenedWindow = false;
                     return;
                 }
+
+                //явно вызываем очистку
+                if (windowOwner != null)
+                {
+                    windowOwner.Dispose();
+                    windowOwner = null;
+                }
+
                 windowOwner = new WindowOwner();
                 windowOwner.ShowDialog<LockWindow>(lockViewModel);
                 return;
@@ -76,6 +84,8 @@ namespace Resto.Front.Api.DataSaturation.Services
 
             isOpenedWindow = false;
             lockViewModel?.CloseAction();
+            windowOwner?.Dispose();
+            windowOwner = null;
         }
     }
 }

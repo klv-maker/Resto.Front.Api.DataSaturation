@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Resto.Front.Api.DataSaturation.ViewModels
 {
@@ -99,18 +100,14 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
 
         private ILockService lockService;
 
-        public SettingsViewModel(ILockService lockService) 
+        public SettingsViewModel(ILockService lockService, ISettings settings) 
         {
             this.lockService = lockService;
+            Update(settings);
         }
 
-        public void Update(ISettings settings)
+        private void Update(ISettings settings)
         {
-            if (settings is null)
-                AddressViewModels.Clear();
-            if (settings.AdressesApi is null)
-                AddressViewModels.Clear();
-
             for (var i = 0; i < settings.AdressesApi.Count; i++)
             {
                 PluginContext.Log.Info($"Trying to add address: {settings.AdressesApi[i]}");
@@ -118,7 +115,6 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             }
             SwitchMediaTime = settings.SwitchMediaTime;
         }
-
 
         public void Cancel()
         {

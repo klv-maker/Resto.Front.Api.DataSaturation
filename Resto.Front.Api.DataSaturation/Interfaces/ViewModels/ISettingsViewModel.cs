@@ -12,6 +12,5 @@ namespace Resto.Front.Api.DataSaturation.Interfaces.ViewModels
         ICommand SaveCommand { get; }
         ICommand AddCommand { get; }
         IAddressViewModel SelectedAddress { get; set; }
-        void Update(ISettings settings);
     }
 }
