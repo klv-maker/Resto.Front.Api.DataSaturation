@@ -1,4 +1,5 @@
-﻿using Resto.Front.Api.DataSaturation.Interfaces;
+﻿using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -32,6 +33,8 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                 OnPropertyChanged(nameof(AddressApi));
             }
         }
+
+        public Action CloseAction { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "")

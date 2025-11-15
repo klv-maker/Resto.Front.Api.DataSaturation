@@ -1,7 +1,7 @@
 ﻿using Resto.Front.Api.Data.Assortment;
 using Resto.Front.Api.DataSaturation.Entities;
 using Resto.Front.Api.DataSaturation.Helpers;
-using Resto.Front.Api.DataSaturation.Interfaces;
+using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.UI;
 using System;
 using System.Collections.Concurrent;
@@ -232,7 +232,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 using (var client = new JsonRpcClient(url))
                 {
                     PluginContext.Log.Info(url);
-                    var response = await client.SendRequestAsync("updateProducts", cancellationSource.Token, toSendData).ConfigureAwait(false);
+                    var response = await client.SendRequestAsync(Constants.UpdateProducts, cancellationSource.Token, toSendData).ConfigureAwait(false);
                     PluginContext.Log.Info(response);
                 }
             }

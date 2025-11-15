@@ -2,6 +2,7 @@
 {
     public static class Constants
     {
-        public const string ProductRequest = "products"; 
+        public const string UpdateProducts = "updateProducts";
+        public const string AddEvent = "addEvent";
     }
 }

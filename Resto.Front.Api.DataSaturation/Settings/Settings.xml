@@ -4,4 +4,5 @@
 		<Address>http://192.168.0.227:8080/json.rpc</Address>
 		<Address>http://192.168.0.227:8080/json.rpc</Address>
 	</AdressesApi>
+	<SwitchMediaTime>60</SwitchMediaTime>
 </Settings>

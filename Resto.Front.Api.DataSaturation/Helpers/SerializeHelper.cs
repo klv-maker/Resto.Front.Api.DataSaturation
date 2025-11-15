@@ -51,5 +51,10 @@ namespace Resto.Front.Api.DataSaturation.Helpers
         {
             return JsonConvert.SerializeObject(data);
         }
+
+        public static T DeserializeFromJson<T>(this string data) where T : class
+        {
+            return JsonConvert.DeserializeObject<T>(data);
+        }
     }
 }

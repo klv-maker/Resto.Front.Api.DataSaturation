@@ -8,9 +8,11 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Resto.Front.Api.V8" Version="8.7.6032" />
 		<PackageReference Include="System.Runtime" Version="4.3.1" />
+		<PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
 	</ItemGroup>
     <ItemGroup>
         <Reference Include="System" />
@@ -23,6 +25,12 @@
         <Reference Include="System.Xml" />
   </ItemGroup>
     <ItemGroup>
+      <None Update="Assets\default.jpg">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Assets\default_image.jpg">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
       <None Update="Manifest.xml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>

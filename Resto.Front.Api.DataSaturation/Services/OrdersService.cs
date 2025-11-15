@@ -3,7 +3,7 @@ using Resto.Front.Api.Data.Orders;
 using Resto.Front.Api.Data.Screens;
 using Resto.Front.Api.DataSaturation.Entities;
 using Resto.Front.Api.DataSaturation.Helpers;
-using Resto.Front.Api.DataSaturation.Interfaces;
+using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
@@ -22,43 +22,39 @@ namespace Resto.Front.Api.DataSaturation.Services
         private OrderInfo currentOrderInfo;
         private object lockerCurrentOrder = new object();
         private object lockerCurrentOrderInfo = new object();
+        private readonly IScreensService screensService;
 
-        public OrdersService()
+        public OrdersService(IScreensService screensService)
         {
             cancellationSource = new CancellationTokenSource();
-            subscriptions.Add(PluginContext.Notifications.ScreenChanged.Subscribe(ScreenChanged));
             subscriptions.Add(PluginContext.Notifications.OrderChanged.Subscribe(OrderChanged));
+            this.screensService = screensService;
+            this.screensService.OrderScreenOpened += OrderScreenOpened;
         }
 
-        private void ScreenChanged(IScreen screen)
+        private void OrderScreenOpened(object sender, IOrder order)
         {
             if (isDisposed)
                 return;
 
-            PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(ScreenChanged)}] Changed screen");
-            if (!(screen is IOrderEditScreen orderEditScreen))
+            if (order is null)
             {
-                PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(ScreenChanged)}] Changed screen not order screen");
-                return; 
+                PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderScreenOpened)}] Order is null");
+                currentOrder = null;
+                return;
             }
 
             //блокируем доступ до currentOrder 
             lock (lockerCurrentOrder)
             {
-                if (orderEditScreen.Order is null)
+
+                if (currentOrder?.Id == order.Id)
                 {
-                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(ScreenChanged)}] Order is null");
-                    currentOrder = null;
+                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderScreenOpened)}] Current order same");
                     return;
                 }
 
-                if (currentOrder?.Id == orderEditScreen.Order.Id)
-                {
-                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(ScreenChanged)}] Current order same");
-                    return;
-                }
-
-                currentOrder = orderEditScreen.Order;
+                currentOrder = order;
             }
 
             StartSendOrderInfo(currentOrder, EntityEventType.Created);
@@ -152,7 +148,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 var client = new JsonRpcClient(url);
                 PluginContext.Log.Info(url);
 
-                var response = await client.SendRequestAsync("addEvent", cancellationSource.Token, toSendData);
+                var response = await client.SendRequestAsync(Constants.AddEvent, cancellationSource.Token, toSendData);
                 PluginContext.Log.Info(response);
             }
             catch (TaskCanceledException ex)
@@ -176,6 +172,9 @@ namespace Resto.Front.Api.DataSaturation.Services
                 return;
 
             isDisposed = true;
+            if (screensService != null)
+                screensService.OrderScreenOpened -= OrderScreenOpened;
+
             cancellationSource?.Cancel();
             cancellationSource?.Dispose();
             subscriptions?.Dispose();

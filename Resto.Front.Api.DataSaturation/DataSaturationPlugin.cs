@@ -1,6 +1,6 @@
 ﻿using Resto.Front.Api.Attributes;
 using Resto.Front.Api.Attributes.JetBrains;
-using Resto.Front.Api.DataSaturation.Interfaces;
+using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.DataSaturation.Services;
 
 namespace Resto.Front.Api.DataSaturation
@@ -13,12 +13,17 @@ namespace Resto.Front.Api.DataSaturation
         private readonly IProductsService productsService;
         private readonly ISettingsService settingsService;
         private readonly IOrdersService ordersService;
+        private readonly IScreensService screensService;
+        private readonly ILockService lockScreenService;
 
         public DataSaturationPlugin()
         {
+            screensService = new ScreensService();
             productsService = new ProductsService();
-            settingsService = new SettingsService();
-            ordersService = new OrdersService();
+            lockScreenService = new LockScreenService(screensService);
+            lockScreenService.UpdateSwitchMediaTime(Settings.Settings.Instance().SwitchMediaTime);
+            settingsService = new SettingsService(lockScreenService);
+            ordersService = new OrdersService(screensService);
         }
 
         public void Dispose()
@@ -26,6 +31,8 @@ namespace Resto.Front.Api.DataSaturation
             productsService.Dispose();
             settingsService.Dispose();
             ordersService.Dispose();
+            screensService.Dispose();
+            lockScreenService.Dispose();
             ModifiersService.Instance.Dispose();
         }
     }

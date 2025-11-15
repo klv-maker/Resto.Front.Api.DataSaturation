@@ -59,13 +59,15 @@ namespace Resto.Front.Api.DataSaturation.Settings
             }
         }
 
-        public void Update(List<string> addresses)
+        public void Update(List<string> addresses, int switchMediaTime)
         {
             PluginContext.Log.Info($"Start update settings with values {string.Join(",", addresses)}");
             this.AdressesApi = addresses;
+            this.SwitchMediaTime = switchMediaTime;
             Save();
         }
     }
+
 
     // Примечание. Для запуска созданного кода может потребоваться NET Framework версии 4.5 или более поздней версии и .NET Core или Standard версии 2.0 или более поздней.
     /// <remarks/>
@@ -77,6 +79,8 @@ namespace Resto.Front.Api.DataSaturation.Settings
     {
 
         private List<string> adressesApiField;
+
+        private int switchMediaTimeField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Address", IsNullable = false)]
@@ -91,8 +95,20 @@ namespace Resto.Front.Api.DataSaturation.Settings
                 this.adressesApiField = value;
             }
         }
-    }
 
+        /// <remarks/>
+        public int SwitchMediaTime
+        {
+            get
+            {
+                return this.switchMediaTimeField;
+            }
+            set
+            {
+                this.switchMediaTimeField = value;
+            }
+        }
+    }
 
 
 }

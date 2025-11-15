@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Resto.Front.Api.DataSaturation.Interfaces;
+using Resto.Front.Api.DataSaturation.Interfaces.Services;
+using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,6 +23,20 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             set
             {
                 addressViewModels = value;
+            }
+        }
+
+        private int switchMediaTime;
+        public int SwitchMediaTime
+        {
+            get
+            {
+                return switchMediaTime;
+            }
+            set
+            {
+                switchMediaTime = value;
+                OnPropertyChanged(nameof(SwitchMediaTime));
             }
         }
         public Action CloseAction { get; set; }
@@ -94,21 +110,26 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 
-        public SettingsViewModel(List<string> addresses) 
+        private ILockService lockService;
+
+        public SettingsViewModel(ILockService lockService) 
         {
-            Update(addresses);
+            this.lockService = lockService;
         }
 
-        private void Update(List<string> addresses) 
+        public void Update(ISettings settings)
         {
-            if (addresses is null)
+            if (settings is null)
+                AddressViewModels.Clear();
+            if (settings.AdressesApi is null)
                 AddressViewModels.Clear();
 
-            for (var i = 0; i < addresses.Count; i++)
+            for (var i = 0; i < settings.AdressesApi.Count; i++)
             {
-                PluginContext.Log.Info($"Trying to add address: {addresses[i]}");
-                AddressViewModels.Add(new AddressViewModel(i + 1, addresses[i]));
+                PluginContext.Log.Info($"Trying to add address: {settings.AdressesApi[i]}");
+                AddressViewModels.Add(new AddressViewModel(i + 1, settings.AdressesApi[i]));
             }
+            SwitchMediaTime = settings.SwitchMediaTime;
         }
 
 
@@ -126,7 +147,8 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                 {
                     addresses.Add(address.AddressApi);
                 }
-                Settings.Settings.Instance().Update(addresses);
+                Settings.Settings.Instance().Update(addresses, SwitchMediaTime);
+                lockService.UpdateSwitchMediaTime(SwitchMediaTime);
             }
             catch (Exception ex) 
             {
