@@ -12,6 +12,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
 
 
@@ -27,9 +28,29 @@ namespace Resto.Front.Api.DataSaturation.Services
         public ProductsService() 
         {
             cancellationSource = new CancellationTokenSource();
+            UpdateProducts();
             subscriptions.Add(PluginContext.Notifications.ProductChanged.Subscribe(ProductChanged));
             subscriptions.Add(PluginContext.Notifications.StopListProductsRemainingAmountsChanged.Subscribe(StopListChanged));
             subscriptions.Add(PluginContext.Operations.AddButtonToPluginsMenu("DataSaturationPlugin.Обмен", UpdateProducts));
+        }
+
+        public async Task UpdateProductByTimeout()
+        {
+            PluginContext.Log.Info($"[{nameof(ProductsService)}|static {nameof(UpdateProductByTimeout)}] Запуск приложения...");
+            if (CheckFileFlag())
+            {
+                try
+                 {
+                     await UpdateProducts();
+                 }
+                 catch (Exception ex)
+                 {
+                     PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Получили ошибку: {ex}");
+                     await Task.Delay(360000);
+                     await UpdateProductByTimeout();
+                 }
+            }
+            
         }
 
         public void UpdateProducts((IViewManager vm, IReceiptPrinter printer) obj)
@@ -80,7 +101,23 @@ namespace Resto.Front.Api.DataSaturation.Services
             Task.Run(async () => {
                 try
                 {
-                    await UpdateProductsByChangeStopList();
+                    if (CheckFileFlag())
+                    {
+                        try
+                        {
+                            await UpdateProductByTimeout();
+                        }
+                        catch (Exception ex)
+                        {
+                            PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Получили ошибку отправки всех продуктов: {ex}");
+                        }
+
+                    }
+                    else
+                    {
+                        await UpdateProductsByChangeStopList();
+                    }
+                        
                 }
                 catch (Exception ex)
                 {
@@ -144,22 +181,38 @@ namespace Resto.Front.Api.DataSaturation.Services
                 {
                     try
                     {
-                        if (isDisposed || cancellationSource.IsCancellationRequested)
-                            return;
+                        if (CheckFileFlag())
+                        {
+                            try 
+                            { 
+                                await UpdateProductByTimeout();
+                            }
+                            catch (Exception ex)
+                            {
+                                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Получили ошибку отправки всех продуктов: {ex}");
+                            }
+                            
+                        }
+                        else
+                        {
+                            if (isDisposed || cancellationSource.IsCancellationRequested)
+                                return;
 
-                        stopList.TryGetValue(product.Id, out ProductInfo productInStopList);
-                        var productInfo = product.GetProductInfoShort(productInStopList);
-                        if (productInfo is null || !productInfo.Any())
-                            return;
+                            stopList.TryGetValue(product.Id, out ProductInfo productInStopList);
+                            var productInfo = product.GetProductInfoShort(productInStopList);
+                            if (productInfo is null || !productInfo.Any())
+                                return;
 
-                        var toSendData = new ProductInfoShortApi();
-                        toSendData.AddValuesToSendData(productInfo);
-                        await Send(toSendData);
-                        ModifiersService.Instance.UpdateProductModifierByPriceCategory(product);
+                            var toSendData = new ProductInfoShortApi();
+                            toSendData.AddValuesToSendData(productInfo);
+                            await Send(toSendData);
+                            ModifiersService.Instance.UpdateProductModifierByPriceCategory(product);
+                        }
+
                     }
                     catch (Exception ex)
                     {
-                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Получили ошибку отправки изменения продукта {product.Id}: {ex}");
+                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Получили ошибку отправки изменения продукта {product.Id}: {ex}");
                     }
                 }, cancellationSource.Token);
             }
@@ -195,11 +248,62 @@ namespace Resto.Front.Api.DataSaturation.Services
                 }
                 toSendData.currentStopList = stopList.GetProductInfoByStopList();
                 await Send(toSendData);
+                DeleteFileFlag();
             }
             catch (Exception ex)
             {
                 PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProducts)}] Получили ошибку при отправке {ex}");
                 throw;
+            }
+        }
+        public static bool CheckFileFlag()
+        {
+            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string appFolder = "DataSaturationPlugin";
+            string folderPath = Path.Combine(appDataFolder, appFolder);
+            Directory.CreateDirectory(folderPath);
+            string filePath = Path.Combine(folderPath, "flag.txt");
+            return File.Exists(filePath);
+        }
+
+        public void CreateFileFlag()
+        {
+            if (!CheckFileFlag())
+            {
+                try
+                {
+                    string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                    string appFolder = "DataSaturationPlugin";
+                    string folderPath = Path.Combine(appDataFolder, appFolder);
+                    Directory.CreateDirectory(folderPath);
+                    string filePath = Path.Combine(folderPath, "flag.txt");
+                    bool isFeatureEnabled = true;
+                    File.WriteAllText(filePath, isFeatureEnabled.ToString());
+                }
+                catch
+                {
+                    PluginContext.Log.Error($"Получили ошибку при добавлении товара");
+                }
+            }
+        }
+
+        public void DeleteFileFlag()
+        {
+            if (CheckFileFlag())
+            {
+                try
+                {
+                    string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                    string appFolder = "DataSaturationPlugin";
+                    string folderPath = Path.Combine(appDataFolder, appFolder);
+                    Directory.CreateDirectory(folderPath);
+                    string filePath = Path.Combine(folderPath, "flag.txt");
+                    File.Delete(filePath);
+                }
+                catch
+                {
+                    PluginContext.Log.Error($"Получили ошибку при удалении товара");
+                }
             }
         }
 
@@ -220,6 +324,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             catch (Exception ex)
             {
                 PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(Send)}] Ошибка при отправке данных: {ex}");
+                CreateFileFlag();
                 throw;
             }
         }
@@ -256,21 +361,41 @@ namespace Resto.Front.Api.DataSaturation.Services
         {
             try
             {
-                var stopListDict = PluginContext.Operations.GetStopListProductsRemainingAmounts().ToDictionary(product => product.Key.Product.Id, product => product.Key.Product.GetProductInfo());
+                var stopListDict = PluginContext.Operations.GetStopListProductsRemainingAmounts().ToDictionary(product => product.Key.Product.Id, product => product.Key);
                 var currentStopList = stopList.Values.ToList();
+                var stopListWithProductInfo = new Dictionary<Guid, ProductInfo>();
+                foreach (var item in stopListDict)
+                {
+                    if (item.Value.ProductSize == null)
+                    {
+                        stopListWithProductInfo.Add(item.Key, item.Value.Product.GetProductInfo());
+                    }
+                    else
+                    {
+                        var fullProduct = item.Value.Product.GetProductInfo();
+                        foreach (var size in fullProduct.productSize)
+                        {
+                            if (item.Value.ProductSize.Name != size.name)
+                            {
+                                fullProduct.productSize.Remove(size);
+                            }
+                        }
+                        stopListWithProductInfo.Add(item.Key, fullProduct);
+                    }
+                }
                 foreach (var item in currentStopList)
                 {
                     if (cancellationSource.IsCancellationRequested)
                         return;
 
-                    if (stopListDict.ContainsKey(item.id))
+                    if (stopListWithProductInfo.ContainsKey(item.id))
                         continue;
 
                     if (!stopList.TryRemove(item.id, out _))
                         PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(GetStopLists)}] Ошибка удаления продукта из списка текущих стоплистов {item.id}");
                 }
 
-                foreach (var item in stopListDict.Values)
+                foreach (var item in stopListWithProductInfo.Values)
                 {
                     if (cancellationSource.IsCancellationRequested)
                         return;
