@@ -155,14 +155,26 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             if (product is null || productSize is null)
                 return null;
 
-            var price = PluginContext.Operations.GetPrice(product, productSize, null, DateTime.Now);
-
-            return new ProductSize()
+            if (!product.ProductTags.Any(_ => _.Group.Name == "DisabledSize" && _.Value == productSize.Name))
             {
-                id = product.Id,
-                name = productSize.Name,
-                price = price
-            };
+                var price = PluginContext.Operations.GetPrice(product, productSize, null, DateTime.Now);
+
+                return new ProductSize()
+                {
+                    id = product.Id,
+                    name = productSize.Name,
+                    price = price
+                };
+            }
+            else
+            {
+                return new ProductSize()
+                {
+                    id = product.Id,
+                    name = productSize.Name,
+                    price = 0
+                };
+            }
         }
 
         public static OrderInfo OrderToOrderInfo(this IOrder order, EntityEventType eventType)
