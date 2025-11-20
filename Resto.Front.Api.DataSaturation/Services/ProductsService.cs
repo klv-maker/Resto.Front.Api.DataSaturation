@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
+using System.Windows.Documents;
 
 
 namespace Resto.Front.Api.DataSaturation.Services
@@ -36,7 +37,8 @@ namespace Resto.Front.Api.DataSaturation.Services
 
         public async Task UpdateProductByTimeout()
         {
-            PluginContext.Log.Info($"[{nameof(ProductsService)}|static {nameof(UpdateProductByTimeout)}] Запуск приложения...");
+            Task.Delay(360000).Wait();
+            PluginContext.Log.Info($"[{nameof(ProductsService)}|static {nameof(UpdateProductByTimeout)}] Вызван метод UpdateProductByTimeout...");
             if (CheckFileFlag())
             {
                 try
@@ -45,12 +47,11 @@ namespace Resto.Front.Api.DataSaturation.Services
                  }
                  catch (Exception ex)
                  {
-                     PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Получили ошибку: {ex}");
-                     await Task.Delay(360000);
-                     await UpdateProductByTimeout();
+                    PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Получили ошибку: {ex}");
+                    UpdateProductByTimeout();
                  }
             }
-            
+            return;
         }
 
         public void UpdateProducts((IViewManager vm, IReceiptPrinter printer) obj)
@@ -101,23 +102,10 @@ namespace Resto.Front.Api.DataSaturation.Services
             Task.Run(async () => {
                 try
                 {
-                    if (CheckFileFlag())
-                    {
-                        try
-                        {
-                            await UpdateProductByTimeout();
-                        }
-                        catch (Exception ex)
-                        {
-                            PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Получили ошибку отправки всех продуктов: {ex}");
-                        }
-
-                    }
-                    else
+                    if (!CheckFileFlag())
                     {
                         await UpdateProductsByChangeStopList();
                     }
-                        
                 }
                 catch (Exception ex)
                 {
@@ -181,19 +169,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 {
                     try
                     {
-                        if (CheckFileFlag())
-                        {
-                            try 
-                            { 
-                                await UpdateProductByTimeout();
-                            }
-                            catch (Exception ex)
-                            {
-                                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Получили ошибку отправки всех продуктов: {ex}");
-                            }
-                            
-                        }
-                        else
+                        if (!CheckFileFlag())
                         {
                             if (isDisposed || cancellationSource.IsCancellationRequested)
                                 return;
@@ -208,7 +184,6 @@ namespace Resto.Front.Api.DataSaturation.Services
                             await Send(toSendData);
                             ModifiersService.Instance.UpdateProductModifierByPriceCategory(product);
                         }
-
                     }
                     catch (Exception ex)
                     {
@@ -325,6 +300,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(Send)}] Ошибка при отправке данных: {ex}");
                 CreateFileFlag();
+                await UpdateProductByTimeout();
                 throw;
             }
         }
