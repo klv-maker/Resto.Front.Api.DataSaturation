@@ -42,7 +42,8 @@ namespace Resto.Front.Api.DataSaturation.Settings
             var settings = new Settings()
             {
                 AdressesApi = new List<string>() { baseServerUrl },
-                SwitchMediaTime = 60
+                SwitchMediaTime = 60,
+                EnableOrdersService = false
             };
             settings.Save();
             instance = settings;
@@ -62,11 +63,12 @@ namespace Resto.Front.Api.DataSaturation.Settings
             }
         }
 
-        public void Update(List<string> addresses, int switchMediaTime)
+        public void Update(List<string> addresses, int switchMediaTime, bool enableOrdersService)
         {
             PluginContext.Log.Info($"Start update settings with values {string.Join(",", addresses)}");
             this.AdressesApi = addresses;
             this.SwitchMediaTime = switchMediaTime;
+            this.EnableOrdersService = enableOrdersService;
             Save();
         }
     }
@@ -84,6 +86,8 @@ namespace Resto.Front.Api.DataSaturation.Settings
         private List<string> adressesApiField;
 
         private int switchMediaTimeField;
+
+        private bool enableOrdersServiceField;
 
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Address", IsNullable = false)]
@@ -109,6 +113,18 @@ namespace Resto.Front.Api.DataSaturation.Settings
             set
             {
                 this.switchMediaTimeField = value;
+            }
+        }
+
+        public bool EnableOrdersService
+        {
+            get
+            {
+                return this.enableOrdersServiceField;
+            }
+            set
+            {
+                this.enableOrdersServiceField = value;
             }
         }
     }

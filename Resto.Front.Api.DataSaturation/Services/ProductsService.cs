@@ -37,7 +37,7 @@ namespace Resto.Front.Api.DataSaturation.Services
 
         public async Task UpdateProductByTimeout()
         {
-            Task.Delay(360000).Wait();
+            Task.Delay(3600000).Wait();
             PluginContext.Log.Info($"[{nameof(ProductsService)}|static {nameof(UpdateProductByTimeout)}] Вызван метод UpdateProductByTimeout...");
             if (CheckFileFlag())
             {

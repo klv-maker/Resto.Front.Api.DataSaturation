@@ -8,6 +8,7 @@ namespace Resto.Front.Api.DataSaturation.Interfaces.ViewModels
     {
         ObservableCollection<IAddressViewModel> AddressViewModels { get; }
         int SwitchMediaTime { get; set; }
+        bool EnableOrdersService { get; set; }
         ICommand CancelCommand { get; }
         ICommand SaveCommand { get; }
         ICommand AddCommand { get; }

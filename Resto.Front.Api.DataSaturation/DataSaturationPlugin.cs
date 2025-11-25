@@ -22,8 +22,8 @@ namespace Resto.Front.Api.DataSaturation
             productsService = new ProductsService();
             lockScreenService = new LockScreenService(screensService);
             lockScreenService.UpdateSwitchMediaTime(Settings.Settings.Instance().SwitchMediaTime);
-            settingsService = new SettingsService(lockScreenService);
-            ordersService = new OrdersService(screensService);
+            ordersService = new OrdersService(screensService, Settings.Settings.Instance().EnableOrdersService);
+            settingsService = new SettingsService(lockScreenService, ordersService);
         }
 
         public void Dispose()

@@ -40,6 +40,19 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                 OnPropertyChanged(nameof(SwitchMediaTime));
             }
         }
+        private bool enableOrdersService;
+        public bool EnableOrdersService
+        {
+            get
+            {
+                return enableOrdersService;
+            }
+            set
+            {
+                enableOrdersService = value;
+                OnPropertyChanged(nameof(EnableOrdersService));
+            }
+        }
         public Action CloseAction { get; set; }
 
         private ICommand cancelCommand;
@@ -99,10 +112,12 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
         }
 
         private ILockService lockService;
+        private IOrdersService orderService;
 
-        public SettingsViewModel(ILockService lockService, ISettings settings) 
+        public SettingsViewModel(ILockService lockService, IOrdersService orderService, ISettings settings) 
         {
             this.lockService = lockService;
+            this.orderService = orderService;
             Update(settings);
         }
 
@@ -114,6 +129,7 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                 AddressViewModels.Add(new AddressViewModel(i + 1, settings.AdressesApi[i], Remove));
             }
             SwitchMediaTime = settings.SwitchMediaTime;
+            EnableOrdersService = settings.EnableOrdersService;
         }
 
         public void Cancel()
@@ -130,8 +146,9 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                 {
                     addresses.Add(address.AddressApi);
                 }
-                Settings.Settings.Instance().Update(addresses, SwitchMediaTime);
+                Settings.Settings.Instance().Update(addresses, SwitchMediaTime, EnableOrdersService);
                 lockService.UpdateSwitchMediaTime(SwitchMediaTime);
+                orderService.UpdateByCheckBox(EnableOrdersService);
             }
             catch (Exception ex) 
             {
