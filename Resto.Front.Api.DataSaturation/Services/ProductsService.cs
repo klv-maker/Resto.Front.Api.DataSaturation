@@ -26,6 +26,7 @@ namespace Resto.Front.Api.DataSaturation.Services
         private bool isDisposed = false;
         private int isStartedUpdateProducts = 0;
         private readonly ConcurrentDictionary<Guid, ProductInfo> stopList = new ConcurrentDictionary<Guid, ProductInfo>();
+        private bool existsUpdateProductByTimeout = false;
         public ProductsService() 
         {
             cancellationSource = new CancellationTokenSource();
@@ -37,19 +38,27 @@ namespace Resto.Front.Api.DataSaturation.Services
 
         public async Task UpdateProductByTimeout()
         {
-            Task.Delay(3600000).Wait();
-            PluginContext.Log.Info($"[{nameof(ProductsService)}|static {nameof(UpdateProductByTimeout)}] Вызван метод UpdateProductByTimeout...");
-            if (CheckFileFlag())
+            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Вызван метод UpdateProductByTimeout...");
+            if (!existsUpdateProductByTimeout)
             {
-                try
-                 {
-                     await UpdateProducts();
-                 }
-                 catch (Exception ex)
-                 {
-                    PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Получили ошибку: {ex}");
-                    UpdateProductByTimeout();
-                 }
+                PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] existsUpdateProductByTimeout = false");
+                existsUpdateProductByTimeout = true;
+                Thread.Sleep(3600000);
+                PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Запущен метод UpdateProductByTimeout...");
+                if (CheckFileFlag())
+                {
+                    try
+                    {
+                        await UpdateProducts();
+                        existsUpdateProductByTimeout = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Получили ошибку: {ex}");
+                        existsUpdateProductByTimeout = false;
+                        UpdateProductByTimeout();
+                    }
+                }
             }
             return;
         }
@@ -223,7 +232,6 @@ namespace Resto.Front.Api.DataSaturation.Services
                 }
                 toSendData.currentStopList = stopList.GetProductInfoByStopList();
                 await Send(toSendData);
-                DeleteFileFlag();
             }
             catch (Exception ex)
             {
@@ -295,12 +303,13 @@ namespace Resto.Front.Api.DataSaturation.Services
                     tasks.Add(SendProducts(address, toSendData));
                 }
                 await Task.WhenAll(tasks);
+                DeleteFileFlag();
             }
             catch (Exception ex)
             {
                 PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(Send)}] Ошибка при отправке данных: {ex}");
                 CreateFileFlag();
-                await UpdateProductByTimeout();
+                Task.Run(() => UpdateProductByTimeout());
                 throw;
             }
         }
