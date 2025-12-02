@@ -60,7 +60,7 @@ namespace Resto.Front.Api.DataSaturation.Views
                 throw new Exception("Не удалось установить хук на события окна");
             }
 
-            PluginContext.Log.Info("NativeSizeHook успешно инициализирован");
+            PluginContext.Log.Info($"[{nameof(ParentWindowSizeHook)}|.ctor] Succses init");
         }
 
         private void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd,
@@ -72,7 +72,7 @@ namespace Resto.Front.Api.DataSaturation.Views
             {
                 GetWindowRect(_parentHandle, out RECT currentRect);
 
-                PluginContext.Log.Info($"Обнаружено изменение размера родителя: {currentRect}");
+                PluginContext.Log.Info($"[{nameof(ParentWindowSizeHook)}|{nameof(WinEventProc)}] Get new size for parent: {currentRect}");
                 // Обновляем дочернее окно
                 UpdateChildWindowSize(currentRect);
             }
@@ -80,7 +80,8 @@ namespace Resto.Front.Api.DataSaturation.Views
 
         private void UpdateChildWindowSize(RECT parentRect)
         {
-            if (_childWindow == null) return;
+            if (_childWindow == null) 
+                return;
 
             // Используем Dispatcher для безопасного обновления UI
             _childWindow.Dispatcher.Invoke(() =>
@@ -95,7 +96,7 @@ namespace Resto.Front.Api.DataSaturation.Views
                 }
                 catch (Exception ex)
                 {
-                    PluginContext.Log.Info($"Ошибка при обновлении дочернего окна: {ex.Message}");
+                    PluginContext.Log.Error($"[{nameof(ParentWindowSizeHook)}|{nameof(UpdateChildWindowSize)}] Get exception when trying to change window size: {ex.Message}");
                 }
             });
         }
@@ -106,7 +107,7 @@ namespace Resto.Front.Api.DataSaturation.Views
             {
                 UnhookWinEvent(_hookId);
                 _hookId = IntPtr.Zero;
-                PluginContext.Log.Info("NativeSizeHook отключен");
+                PluginContext.Log.Info($"[{nameof(ParentWindowSizeHook)}|{nameof(Dispose)}] Disabled size window hook");
             }
         }
     }

@@ -4,6 +4,6 @@ namespace Resto.Front.Api.DataSaturation.Interfaces.Services
 {
     public interface ILockService : IDisposable
     {
-        void UpdateSwitchMediaTime(int newSwitchMediaTime);
+        void LockScreenChanged(object sender, bool isOpened);
     }
 }
