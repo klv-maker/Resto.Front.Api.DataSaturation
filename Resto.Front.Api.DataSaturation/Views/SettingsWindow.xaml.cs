@@ -44,5 +44,10 @@ namespace Resto.Front.Api.DataSaturation.Views
         {
             e.Handled = !e.Text.All(char.IsNumber);
         }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

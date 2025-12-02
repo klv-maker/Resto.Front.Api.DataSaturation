@@ -16,6 +16,7 @@ namespace Resto.Front.Api.DataSaturation
         private readonly IOrdersService ordersService;
         private readonly IScreensService screensService;
         private readonly ILockService lockScreenService;
+        private readonly IBarcodeScannerService barcodeScannerService;
 
         public DataSaturationPlugin()
         {
@@ -24,8 +25,10 @@ namespace Resto.Front.Api.DataSaturation
             screensService = new ScreensService();
             screensService.LockScreenChanged += lockScreenService.LockScreenChanged;
             productsService = new ProductsService();
-            settingsService = new SettingsService(lockScreenService);
-            ordersService = new OrdersService(screensService);
+            lockScreenService.UpdateSwitchMediaTime(Settings.Settings.Instance().SwitchMediaTime);
+            ordersService = new OrdersService(screensService, Settings.Settings.Instance().EnableOrdersService);
+            settingsService = new SettingsService(lockScreenService, ordersService);
+            barcodeScannerService = new BarcodeScannerService();
         }
 
         public void Dispose()

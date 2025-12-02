@@ -2,8 +2,8 @@
 {
     public class BarcodeScanInfo
     {
-        public string iikoCustomerId { get; set; }
-        public string totp { get; set; }
-        public long timestamp { get; set; }
+        public string i { get; set; }
+        public string o { get; set; }
+        public long t { get; set; }
     }
 }

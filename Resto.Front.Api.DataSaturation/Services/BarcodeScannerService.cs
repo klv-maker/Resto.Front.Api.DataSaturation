@@ -1,6 +1,7 @@
 ﻿using Resto.Front.Api.Data.Orders;
 using Resto.Front.Api.DataSaturation.Entities;
 using Resto.Front.Api.DataSaturation.Helpers;
+using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.UI;
 using System;
 using System.Reactive.Disposables;
@@ -9,9 +10,10 @@ using System.Text;
 
 namespace Resto.Front.Api.DataSaturation.Services
 {
-    public class BarcodeScannerService
+    public class BarcodeScannerService : IBarcodeScannerService
     {
         private readonly CompositeDisposable subscriptions = new CompositeDisposable();
+        private bool isDisposed = false;
         public BarcodeScannerService() 
         {
             subscriptions.Add(PluginContext.Notifications.OrderEditBarcodeScanned.Subscribe(BarcodeScanned));
@@ -23,16 +25,16 @@ namespace Resto.Front.Api.DataSaturation.Services
             string masterSecret = "sk_KmDZI7u2GwaftSOfM0zR";
             var config = new { digits = 6, period = 30, window = 1 };
 
-            string derivedSecretKey = DeriveSecret(masterSecret, payload.iikoCustomerId);
-            string computedTotp = GenerateTotp(derivedSecretKey, payload.timestamp * 1000, config.digits, config.period);
-            bool matches = computedTotp == payload.totp;
+            string derivedSecretKey = DeriveSecret(masterSecret, payload.i);
+            string computedTotp = GenerateTotp(derivedSecretKey, payload.t * 1000, config.digits, config.period);
+            bool matches = computedTotp == payload.o;
 
             PluginContext.Log.Info("derivedSecretKey: " + derivedSecretKey);
             PluginContext.Log.Info("TOTP(из расчёта): " + computedTotp);
             PluginContext.Log.Info("Совпадает с payload.totp: " + matches);
             if (matches)
             {
-                var client = obj.os.GetClientById(Guid.Parse(payload.iikoCustomerId));
+                var client = obj.os.GetClientById(Guid.Parse(payload.i));
                 obj.os.AddClientToOrder(obj.order, client, obj.os.GetDefaultCredentials());
                 PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.Id} {client.Surname} {client.Name} to order {obj.order.Id} {obj.order.Number}");
             }
@@ -86,6 +88,15 @@ namespace Resto.Front.Api.DataSaturation.Services
                 byte[] hash = hmac.ComputeHash(counterBytes);
                 return TruncateToCode(hash);
             }
+        }
+
+        public void Dispose()
+        {
+            if (isDisposed)
+                return;
+
+            isDisposed = true;
+            subscriptions?.Dispose();
         }
     }
 }

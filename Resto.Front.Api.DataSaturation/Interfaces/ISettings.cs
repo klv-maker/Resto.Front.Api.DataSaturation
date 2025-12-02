@@ -6,6 +6,7 @@ namespace Resto.Front.Api.DataSaturation.Interfaces
     {
         List<string> AdressesApi { get; }
         int SwitchMediaTime { get; }
-        void Update(List<string> addresses, int switchMediaTime);
+        bool EnableOrdersService { get; }
+        void Update(List<string> addresses, int switchMediaTime, bool enableOrdersService);
     }
 }
