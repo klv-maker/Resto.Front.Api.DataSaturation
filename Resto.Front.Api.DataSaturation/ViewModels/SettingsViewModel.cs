@@ -131,7 +131,6 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                     addresses.Add(address.AddressApi);
                 }
                 Settings.Settings.Instance().Update(addresses, SwitchMediaTime);
-                lockService.UpdateSwitchMediaTime(SwitchMediaTime);
             }
             catch (Exception ex) 
             {

@@ -23,9 +23,8 @@ namespace Resto.Front.Api.DataSaturation.Services
             PluginContext.Log.Info($"[{nameof(ScreensService)}|{nameof(ScreenChanged)}] Changed screen");
             if (!(screen is ILockScreen) && isLockScreenOpened)
             {
-                PluginContext.Log.Info($"[{nameof(ScreensService)}|{nameof(ScreenChanged)}] Send close lock screen");
-                isLockScreenOpened = false;
-                LockScreenChanged?.Invoke(this, false);
+                PluginContext.Log.Info($"[{nameof(ScreensService)}|{nameof(ScreenChanged)}] Send close lock screen"); 
+                SendLockScreenChanged(false);
             }
 
             if (screen is IOrderEditScreen orderEditScreen)
@@ -37,10 +36,15 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (screen is ILockScreen lockScreen)
             {
                 PluginContext.Log.Info($"[{nameof(ScreensService)}|{nameof(ScreenChanged)}] Is lock screen");
-                isLockScreenOpened = true;
-                LockScreenChanged?.Invoke(this, true);
+                SendLockScreenChanged(true);
                 return;
             }
+        }
+
+        public void SendLockScreenChanged(bool isOpen)
+        {
+            isLockScreenOpened = isOpen;
+            LockScreenChanged?.Invoke(this, isOpen);
         }
 
         public void Dispose()

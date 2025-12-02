@@ -34,7 +34,7 @@ namespace Resto.Front.Api.DataSaturation.Services
 
         public void UpdateProducts((IViewManager vm, IReceiptPrinter printer) obj)
         {
-            PluginContext.Log.Info($"[{nameof(ProductsService)}|static {nameof(UpdateProducts)}] Запуск обмена пользователем {PluginContext.Operations.GetCurrentUser()?.Name}");
+            PluginContext.Log.Info($"[{nameof(ProductsService)}|static {nameof(UpdateProducts)}] Exchange was started by user {PluginContext.Operations.GetCurrentUser()?.Name}");
             if (isDisposed || cancellationSource.IsCancellationRequested)
                 return;
 
@@ -57,7 +57,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             }
             catch (Exception ex)
             {
-                PluginContext.Log.Error($"[{nameof(ProductsService)}|static {nameof(UpdateProducts)}] Ошибка при обмене: {ex}");
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|static {nameof(UpdateProducts)}] Get error when trying exchange: {ex}");
                 if (ex.InnerException != null)
                 {
                     obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {ex.InnerException.Message}");
@@ -73,7 +73,7 @@ namespace Resto.Front.Api.DataSaturation.Services
 
         public void StopListChanged(VoidValue voidValue)
         {
-            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Вызван метод StopListChanged...");
+            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Get notification stop list changed");
             if (isDisposed || cancellationSource.IsCancellationRequested)
                 return;
 
@@ -84,14 +84,14 @@ namespace Resto.Front.Api.DataSaturation.Services
                 }
                 catch (Exception ex)
                 {
-                    PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Получили ошибку: {ex}");
+                    PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Get error when trying to update stop list for products: {ex}");
                 }
             }, cancellationSource.Token);
         }
 
         public async Task UpdateProductsByChangeStopList()
         {
-            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Вызван метод UpdateProductsByChangeStopList...");
+            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProductsByChangeStopList)}] Start update stop list for products");
             if (isDisposed || cancellationSource.IsCancellationRequested)
                 return;
 
@@ -131,7 +131,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             }
             catch (Exception ex)
             {
-                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProductsByChangeStopList)}] Получили ошибку при обновлении стоплиста {ex}");
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProductsByChangeStopList)}] Get error when trying to update stop list: {ex}");
             }
         }
 
@@ -139,7 +139,7 @@ namespace Resto.Front.Api.DataSaturation.Services
         {
             try
             {
-                PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Получили обновление продукта {product.Id} {product.Number} price = {product.Price}");
+                PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Get update for product {product.Id} {product.Number} price = {product.Price}");
                 Task.Run(async () =>
                 {
                     try
@@ -159,13 +159,13 @@ namespace Resto.Front.Api.DataSaturation.Services
                     }
                     catch (Exception ex)
                     {
-                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Получили ошибку отправки изменения продукта {product.Id}: {ex}");
+                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StopListChanged)}] Get error when trying to send product {product.Id}: {ex}");
                     }
                 }, cancellationSource.Token);
             }
             catch (Exception ex)
             {
-                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Получили ошибку при обновлении продукта {product.Id}\r\n {ex}");
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Get error when trying to update product {product.Id}: {ex}");
             }
         }
 
@@ -173,6 +173,7 @@ namespace Resto.Front.Api.DataSaturation.Services
         {
             try
             {
+                PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProducts)}] Start update products");
                 if (isDisposed || cancellationSource.IsCancellationRequested)
                     return;
 
@@ -198,7 +199,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             }
             catch (Exception ex)
             {
-                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProducts)}] Получили ошибку при отправке {ex}");
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProducts)}] Get error when trying to send products: {ex}");
                 throw;
             }
         }
@@ -219,7 +220,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             }
             catch (Exception ex)
             {
-                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(Send)}] Ошибка при отправке данных: {ex}");
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(Send)}] Get error when trying to send data: {ex}");
                 throw;
             }
         }
@@ -247,7 +248,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             }
             catch (Exception ex)
             {
-                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(SendProducts)}] Get task exception {ex}");
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(SendProducts)}] Get task exception: {ex}");
                 throw;
             }
         }
@@ -267,7 +268,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                         continue;
 
                     if (!stopList.TryRemove(item.id, out _))
-                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(GetStopLists)}] Ошибка удаления продукта из списка текущих стоплистов {item.id}");
+                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(GetStopLists)}] Get error when trying to delete product {item.id} from current stop list");
                 }
 
                 foreach (var item in stopListDict.Values)
@@ -282,12 +283,12 @@ namespace Resto.Front.Api.DataSaturation.Services
                     }
 
                     if (!stopList.TryAdd(item.id, item))
-                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(GetStopLists)}] Ошибка добавления продукта в список текущих стоплистов {item.id}");
+                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(GetStopLists)}] Get error when trying to add product {item.id} to current stop list");
                 }
             }
             catch (Exception ex)
             {
-                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(GetStopLists)}] Получили ошибку при обновлении стоп листа {ex}");
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(GetStopLists)}] Get error when trying to update stop list {ex}");
             }
         }
 

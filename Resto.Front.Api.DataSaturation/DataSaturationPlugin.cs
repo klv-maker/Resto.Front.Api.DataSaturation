@@ -2,6 +2,7 @@
 using Resto.Front.Api.Attributes.JetBrains;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.DataSaturation.Services;
+using System;
 
 namespace Resto.Front.Api.DataSaturation
 {
@@ -18,10 +19,11 @@ namespace Resto.Front.Api.DataSaturation
 
         public DataSaturationPlugin()
         {
+            bool is64Bit = Environment.Is64BitProcess;
+            lockScreenService = new LockScreenService();
             screensService = new ScreensService();
+            screensService.LockScreenChanged += lockScreenService.LockScreenChanged;
             productsService = new ProductsService();
-            lockScreenService = new LockScreenService(screensService);
-            lockScreenService.UpdateSwitchMediaTime(Settings.Settings.Instance().SwitchMediaTime);
             settingsService = new SettingsService(lockScreenService);
             ordersService = new OrdersService(screensService);
         }
@@ -31,6 +33,7 @@ namespace Resto.Front.Api.DataSaturation
             productsService.Dispose();
             settingsService.Dispose();
             ordersService.Dispose();
+            screensService.LockScreenChanged -= lockScreenService.LockScreenChanged;
             screensService.Dispose();
             lockScreenService.Dispose();
             ModifiersService.Instance.Dispose();
