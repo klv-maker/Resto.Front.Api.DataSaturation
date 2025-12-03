@@ -19,6 +19,7 @@ namespace Resto.Front.Api.DataSaturation.ConnectionLib
         private static BlockingCollection<IViewModel> viewModels = new BlockingCollection<IViewModel>();
         public static Logger logger;
         private static bool isDisposed = false;
+        private static BlockingCollection<Window> mainWindows = new BlockingCollection<Window>();
 
         public static void Run()
         {
@@ -80,9 +81,10 @@ namespace Resto.Front.Api.DataSaturation.ConnectionLib
                         w.Closed += WindowClosed;
                         // Ждем полной загрузки окна
                         if (!w.IsLoaded)
-                            w.Loaded += (s, e) => ReplaceMedia(w);
+                            w.Loaded += WindowLoaded;
                         else
                             ReplaceMedia(w);
+                        mainWindows.Add(w);
                     }
                     catch (Exception ex)
                     {
@@ -96,17 +98,26 @@ namespace Resto.Front.Api.DataSaturation.ConnectionLib
             }
         }
 
+        private static void WindowLoaded(object sender, RoutedEventArgs e)
+        {
+            ReplaceMedia(sender as Window);
+        }
+
         private static void WindowClosed(object sender, EventArgs e)
         {
             logger?.Warn("WindowClosed");
             DisposeLib();
         }
 
-        private static void ReplaceMedia(Window w)
+        private static void ReplaceMedia(Window window)
         {
-            var grid = SearchMainWindowGridWithImageBrush(w);
-            var mediaElement = SearchMediaElementInWindow(w);
+            if (window == null)
+                return;
+
+            var grid = SearchMainWindowGridWithImageBrush(window);
+            var mediaElement = SearchMediaElementInWindow(window);
             var viewModel = new LockViewModel(logger, mediaElement, grid);
+            viewModels.Add(viewModel);
         }
 
         private static MediaElement SearchMediaElementInWindow(Window window)
@@ -224,6 +235,14 @@ namespace Resto.Front.Api.DataSaturation.ConnectionLib
                 viewModels.CompleteAdding();
                 foreach (var item in viewModels)
                     item.Dispose();
+
+                mainWindows.CompleteAdding();
+                foreach(var window in mainWindows)
+                {
+                    window.Closed -= WindowClosed;
+                    window.Loaded -= WindowLoaded;
+
+                }
             }
             catch (Exception ex)
             {
