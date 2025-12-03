@@ -147,7 +147,6 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                     addresses.Add(address.AddressApi);
                 }
                 Settings.Settings.Instance().Update(addresses, SwitchMediaTime, EnableOrdersService);
-                lockService.UpdateSwitchMediaTime(SwitchMediaTime);
                 orderService.UpdateByCheckBox(EnableOrdersService);
             }
             catch (Exception ex) 
