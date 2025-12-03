@@ -25,7 +25,6 @@ namespace Resto.Front.Api.DataSaturation
             screensService = new ScreensService();
             screensService.LockScreenChanged += lockScreenService.LockScreenChanged;
             productsService = new ProductsService();
-            lockScreenService.UpdateSwitchMediaTime(Settings.Settings.Instance().SwitchMediaTime);
             ordersService = new OrdersService(screensService, Settings.Settings.Instance().EnableOrdersService);
             settingsService = new SettingsService(lockScreenService, ordersService);
             barcodeScannerService = new BarcodeScannerService();

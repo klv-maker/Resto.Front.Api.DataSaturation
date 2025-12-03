@@ -8,7 +8,7 @@ namespace Resto.Front.Api.DataSaturation.Services
         private bool isDisposed = false;
         public LockScreenService() 
         {
-            PluginContext.Log.Info($"[{nameof(LockScreenService)}|.ctor] Clean resourses");
+            LockScreenChanged(null, true);
             PluginContext.Log.Info($"[{nameof(LockScreenService)}|.ctor] Send lock screen showing. Service is created");
         }
 
