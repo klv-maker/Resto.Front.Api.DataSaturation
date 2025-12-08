@@ -27,24 +27,68 @@ namespace Resto.Front.Api.DataSaturation.Services
         private int isStartedUpdateProducts = 0;
         private readonly ConcurrentDictionary<Guid, ProductInfo> stopList = new ConcurrentDictionary<Guid, ProductInfo>();
         private bool existsUpdateProductByTimeout = false;
+        private Task initUpdateProductsTask = null;
+        private Exception initUpdateException = null;
         public ProductsService() 
         {
             cancellationSource = new CancellationTokenSource();
-            UpdateProducts();
             subscriptions.Add(PluginContext.Notifications.ProductChanged.Subscribe(ProductChanged));
             subscriptions.Add(PluginContext.Notifications.StopListProductsRemainingAmountsChanged.Subscribe(StopListChanged));
             subscriptions.Add(PluginContext.Operations.AddButtonToPluginsMenu("DataSaturationPlugin.Обмен", UpdateProducts));
+            initUpdateProductsTask = StartUpdateProducts(false);
+        }
+
+        private Task StartUpdateProducts(bool needThrowException)
+        {
+            try
+            {
+                return Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (Interlocked.CompareExchange(ref isStartedUpdateProducts, 1, 0) != 1)
+                            await UpdateProducts();
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StartUpdateProducts)}] Get error in update task: {ex}");
+                        initUpdateException = ex;
+                        if (needThrowException)
+                            throw;
+                    }
+                }, cancellationSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StartUpdateProducts)}] Get cancel");
+                return null;
+            }
+            finally
+            {
+                Interlocked.Exchange(ref isStartedUpdateProducts, 0);
+            }
         }
 
         public async Task UpdateProductByTimeout()
         {
-            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Вызван метод UpdateProductByTimeout...");
+            if (isDisposed || cancellationSource.IsCancellationRequested)
+                return;
+
+            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Start UpdateProductByTimeout...");
             if (!existsUpdateProductByTimeout)
             {
                 PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] existsUpdateProductByTimeout = false");
                 existsUpdateProductByTimeout = true;
-                Thread.Sleep(3600000);
-                PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Запущен метод UpdateProductByTimeout...");
+                try
+                {
+                    Task.Delay(3600000).Wait(cancellationSource.Token); //ждем с токеном отмены
+                }
+                catch (OperationCanceledException) { } //просто словили выход, не начинаем повторно отправку
+
+                if (isDisposed || cancellationSource.IsCancellationRequested)
+                    return;
+
+                PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Run UpdateProductByTimeout...");
                 if (CheckFileFlag())
                 {
                     try
@@ -54,7 +98,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                     }
                     catch (Exception ex)
                     {
-                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Получили ошибку: {ex}");
+                        PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(UpdateProductByTimeout)}] Get error: {ex}");
                         existsUpdateProductByTimeout = false;
                         UpdateProductByTimeout();
                     }
@@ -73,14 +117,26 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 if (Interlocked.CompareExchange(ref isStartedUpdateProducts, 1, 0) == 1)
                 {
-                    obj.vm.ShowOkPopup("Обмен", "Обмен уже был начат");
+                    if (initUpdateProductsTask != null)
+                    {
+                        initUpdateProductsTask.Wait(cancellationSource.Token);
+
+                        if (initUpdateException.InnerException != null)
+                        {
+                            obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {initUpdateException.InnerException.Message}");
+                            return;
+                        }
+                        obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {initUpdateException.Message}");
+                        return;
+                    }
+                    //так как обмен уже был начат, просто выходим. защита от двойного нажатия (сомнительное воспроизведение)
                     return;
                 }
                 var userAnswer = obj.vm.ShowOkCancelPopup("Обмен", "Начать обмен?");
                 if (!userAnswer)
                     return;
 
-                UpdateProducts().Wait(cancellationSource.Token);
+                StartUpdateProducts(true).Wait(cancellationSource.Token);
             }
             catch (OperationCanceledException)
             {
@@ -240,13 +296,14 @@ namespace Resto.Front.Api.DataSaturation.Services
                 throw;
             }
         }
+
         public static bool CheckFileFlag()
         {
-            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string appFolder = "DataSaturationPlugin";
-            string folderPath = Path.Combine(appDataFolder, appFolder);
-            Directory.CreateDirectory(folderPath);
-            string filePath = Path.Combine(folderPath, "flag.txt");
+            var flagsPath = Path.Combine(PluginContext.Integration.GetDataStorageDirectoryPath(), "Flags");
+            if (!Directory.Exists(flagsPath))
+                return false;
+
+            string filePath = Path.Combine(flagsPath, "flag.txt");
             return File.Exists(filePath);
         }
 
@@ -256,11 +313,11 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 try
                 {
-                    string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                    string appFolder = "DataSaturationPlugin";
-                    string folderPath = Path.Combine(appDataFolder, appFolder);
-                    Directory.CreateDirectory(folderPath);
-                    string filePath = Path.Combine(folderPath, "flag.txt");
+                    var flagsPath = Path.Combine(PluginContext.Integration.GetDataStorageDirectoryPath(), "Flags");
+                    if (!Directory.Exists(flagsPath))
+                        Directory.CreateDirectory(flagsPath);
+
+                    string filePath = Path.Combine(flagsPath, "flag.txt");
                     bool isFeatureEnabled = true;
                     File.WriteAllText(filePath, isFeatureEnabled.ToString());
                 }
@@ -277,11 +334,11 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 try
                 {
-                    string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                    string appFolder = "DataSaturationPlugin";
-                    string folderPath = Path.Combine(appDataFolder, appFolder);
-                    Directory.CreateDirectory(folderPath);
-                    string filePath = Path.Combine(folderPath, "flag.txt");
+                    var flagsPath = Path.Combine(PluginContext.Integration.GetDataStorageDirectoryPath(), "Flags");
+                    if (!Directory.Exists(flagsPath))
+                        return;
+
+                    string filePath = Path.Combine(flagsPath, "flag.txt");
                     File.Delete(filePath);
                 }
                 catch
@@ -407,10 +464,21 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (isDisposed)
                 return;
 
-            isDisposed = true;
-            cancellationSource?.Cancel();
-            cancellationSource?.Dispose();
-            subscriptions?.Dispose();
+            try
+            {
+                isDisposed = true;
+                cancellationSource?.Cancel();
+                initUpdateProductsTask.Wait();
+            }
+            catch (Exception ex)
+            {
+                PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(Dispose)}] Get error when trying to dispose {ex}");
+            }
+            finally
+            {
+                cancellationSource?.Dispose();
+                subscriptions?.Dispose();
+            }
         }
     }
 }

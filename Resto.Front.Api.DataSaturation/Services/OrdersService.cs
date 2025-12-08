@@ -4,6 +4,7 @@ using Resto.Front.Api.Data.Screens;
 using Resto.Front.Api.DataSaturation.Entities;
 using Resto.Front.Api.DataSaturation.Helpers;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
+using Resto.Front.Api.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
