@@ -46,8 +46,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 {
                     try
                     {
-                        if (Interlocked.CompareExchange(ref isStartedUpdateProducts, 1, 0) != 1)
-                            await UpdateProducts();
+                        await UpdateProducts();
                     }
                     catch (Exception ex)
                     {
@@ -56,16 +55,17 @@ namespace Resto.Front.Api.DataSaturation.Services
                         if (needThrowException)
                             throw;
                     }
+                    finally
+                    {
+                        if (initUpdateProductsTask != null)
+                            initUpdateProductsTask = null;
+                    }
                 }, cancellationSource.Token);
             }
             catch (OperationCanceledException)
             {
                 PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(StartUpdateProducts)}] Get cancel");
                 return null;
-            }
-            finally
-            {
-                Interlocked.Exchange(ref isStartedUpdateProducts, 0);
             }
         }
 
@@ -115,20 +115,21 @@ namespace Resto.Front.Api.DataSaturation.Services
 
             try
             {
-                if (Interlocked.CompareExchange(ref isStartedUpdateProducts, 1, 0) == 1)
+                if (initUpdateProductsTask != null)
                 {
-                    if (initUpdateProductsTask != null)
-                    {
-                        initUpdateProductsTask.Wait(cancellationSource.Token);
+                    initUpdateProductsTask.Wait(cancellationSource.Token);
 
-                        if (initUpdateException.InnerException != null)
-                        {
-                            obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {initUpdateException.InnerException.Message}");
-                            return;
-                        }
-                        obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {initUpdateException.Message}");
+                    if (initUpdateException.InnerException != null)
+                    {
+                        obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {initUpdateException.InnerException.Message}");
                         return;
                     }
+                    obj.vm.ShowErrorPopup($"Произошла ошибка обмена:\r\n {initUpdateException.Message}");
+                    return;
+                }
+
+                if (Interlocked.CompareExchange(ref isStartedUpdateProducts, 1, 0) == 1)
+                {
                     //так как обмен уже был начат, просто выходим. защита от двойного нажатия (сомнительное воспроизведение)
                     return;
                 }
@@ -273,7 +274,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 GetStopLists();
 
                 var products = PluginContext.Operations.GetActiveProducts().ToDictionary(product => product.Id, product => product);
-
+                
                 var toSendData = new ProductInfoShortApi();
                 foreach (var product in products)
                 {
