@@ -7,6 +7,7 @@ using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,7 +68,8 @@ namespace Resto.Front.Api.DataSaturation.Services
                     currentOrder = order;
                 }
 
-                StartSendOrderInfo(currentOrder, EntityEventType.Created);
+                if (currentOrder.Items.Any())
+                    StartSendOrderInfo(currentOrder, EntityEventType.Created);
             }
         }
 
