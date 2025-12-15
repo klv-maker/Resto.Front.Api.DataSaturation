@@ -154,8 +154,10 @@ namespace Resto.Front.Api.DataSaturation.Helpers
         {
             if (product is null || productSize is null)
                 return null;
+            var disabledSizes = PluginContext.Operations.TryGetDisabledSizesByProduct(product);
 
-            if (!product.ProductTags.Any(_ => _.Group.Name == "DisabledSize" && _.Value == productSize.Name))
+            //if (!product.ProductTags.Any(_ => _.Group.Name == "DisabledSize" && _.Value == productSize.Name))
+            if (!disabledSizes.Any(_ => _.Name == productSize.Name))
             {
                 var price = PluginContext.Operations.GetPrice(product, productSize, null, DateTime.Now);
 
@@ -182,7 +184,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             OrderStatusInfo orderStatus = OrderStatusInfo.start;
             if (eventType == EntityEventType.Updated)
             {
-                if (order.Status == OrderStatus.Bill || order.Status == OrderStatus.Closed)
+                if (order.Status == OrderStatus.Bill || order.Status == OrderStatus.Closed || order.Items.Count == 0)
                     orderStatus = OrderStatusInfo.close;
                 else
                     orderStatus = OrderStatusInfo.update;

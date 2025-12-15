@@ -11,7 +11,9 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Resto.Front.Api.DataSaturation.Services
 {
@@ -94,7 +96,14 @@ namespace Resto.Front.Api.DataSaturation.Services
                 {
                     currentOrder = obj.Entity;
                 }
-                StartSendOrderInfo(currentOrder, obj.EventType);
+                if (currentOrder.Items.Count == 1 && (obj.EventType == EntityEventType.Created || obj.EventType == EntityEventType.Updated) && !(currentOrder.Status == OrderStatus.Bill || currentOrder.Status == OrderStatus.Closed))
+                {
+                    StartSendOrderInfo(currentOrder, EntityEventType.Created);
+                }
+                else
+
+                    StartSendOrderInfo(currentOrder, obj.EventType);
+
             }
         }
 
