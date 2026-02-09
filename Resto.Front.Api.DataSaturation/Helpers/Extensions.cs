@@ -8,6 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace Resto.Front.Api.DataSaturation.Helpers
 {
@@ -179,7 +180,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
             }
         }
 
-        public static OrderInfo OrderToOrderInfo(this IOrder order, EntityEventType eventType)
+        public static OrderInfo OrderToOrderInfo(this IOrder order, EntityEventType eventType, string dataQR)
         {
             OrderStatusInfo orderStatus = OrderStatusInfo.start;
             if (eventType == EntityEventType.Updated)
@@ -197,6 +198,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 if (item is IOrderProductItem productItem)
                 {
                     var size = GetProductSize(productItem.Product, productItem.Size);
+                    var countProduct = productItem.Amount;
                     var productInfo = new OrderItemInfo
                     {
                         id = productItem.Id,
@@ -211,7 +213,7 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                     foreach (var modifier in productItem.AssignedModifiers)
                     {
                         var groupModifier = ModifiersService.Instance.GetGroupModifierInfo(productItem.Product, modifier.Product.Id);
-                        var modifierItem = GetOrderModifierInfo(modifier, groupModifier);
+                        var modifierItem = GetOrderModifierInfo(modifier, groupModifier, countProduct);
                         if (modifierItem != null)
                             productInfo.modifiers.Add(modifierItem);
                     }
@@ -231,8 +233,30 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 orderNumber = order.Number,
                 orderStatus = orderStatus,
                 items = productInfos.Values.OrderBy(item => item.printTime).ToList(),
-                sum = order.FullSum
+                sumWithoutDiscounts = order.FullSum,
+                sumWithDiscounts = order.ResultSum,
+                visibleQR = PaymantsByQR(order, orderStatus),
+                dataQR = dataQR
             };
+        }
+
+        private static bool PaymantsByQR(IOrder order, OrderStatusInfo orderStatus)
+        {
+            var result = false;
+            if (order.Payments.Count > 0)
+            {
+                foreach (var item in order.Payments)
+                {
+                    if ((item.Type.Name.IndexOf("яндекс", StringComparison.OrdinalIgnoreCase) >= 0) || (item.Type.Name.IndexOf("yandex", StringComparison.OrdinalIgnoreCase) >= 0))
+                    {
+                        if (!item.AdditionalData.SerializeToJson().Contains("PayLink") && item.Sum > 0)
+                        {
+                            result = true;
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         private static void AddOrderCompoundItem(Dictionary<Guid, OrderItemInfo> productInfos, IOrderCompoundItem compoundItem, IPriceCategory priceCategory)
@@ -275,11 +299,11 @@ namespace Resto.Front.Api.DataSaturation.Helpers
                 modifiers = modifierInfos
             };
         }
-        private static OrderModifierInfo GetOrderModifierInfo(IOrderModifierItem orderModifierItem, IChildModifier childModifier)
+        private static OrderModifierInfo GetOrderModifierInfo(IOrderModifierItem orderModifierItem, IChildModifier childModifier, decimal countProduct = 1)
         {
             if (childModifier != null)
             {
-                if (childModifier.DefaultAmount == orderModifierItem.Amount)
+                if (childModifier.DefaultAmount * countProduct == orderModifierItem.Amount)
                 {
                     if (!orderModifierItem.Deleted && childModifier.HideIfDefaultAmount)
                         return null;

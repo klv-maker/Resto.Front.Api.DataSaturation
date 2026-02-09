@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -28,19 +29,26 @@ namespace Resto.Front.Api.DataSaturation.Services
         private object lockerCurrentOrderInfo = new object();
         private readonly IScreensService screensService;
         private bool enableOrdersServiceLocal;
+        private string dataQRLocal;
 
-        public OrdersService(IScreensService screensService, bool enableOrdersService)
+        public OrdersService(IScreensService screensService, bool enableOrdersService, string dataQR)
         {
             cancellationSource = new CancellationTokenSource();
             subscriptions.Add(PluginContext.Notifications.OrderChanged.Subscribe(OrderChanged));
             this.screensService = screensService;
             this.screensService.OrderScreenOpened += OrderScreenOpened;
             enableOrdersServiceLocal = enableOrdersService;
+            dataQRLocal = dataQR;
         }
 
         public void UpdateByCheckBox(bool enableOrdersService)
         {
             enableOrdersServiceLocal = enableOrdersService;
+        }
+
+        public void UpdateDataQR(string dataQR)
+        {
+            dataQRLocal = dataQR;
         }
 
         private void OrderScreenOpened(object sender, IOrder order)
@@ -117,7 +125,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 try
                 {
                     PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(StartSendOrderInfo)}] Get order for send {order.Id} eventType = {eventType}");
-                    var orderInfo = order.OrderToOrderInfo(eventType);
+                    var orderInfo = order.OrderToOrderInfo(eventType, dataQRLocal);
                     PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(StartSendOrderInfo)}] Get orderInfo = {orderInfo.SerializeToJson()}");
                     if (orderInfo is null)
                         return;
@@ -157,7 +165,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 data = toSendData,
                 name = "iikoBasketStatus",
-                type = toSendData.orderStatus.ToString()
+                type = ((toSendData.orderStatus.ToString() == "close") && (toSendData.visibleQR == true)) ? "update" : (toSendData.orderStatus.ToString())
             };
             foreach (var address in Settings.Settings.Instance().AdressesApi)
             {

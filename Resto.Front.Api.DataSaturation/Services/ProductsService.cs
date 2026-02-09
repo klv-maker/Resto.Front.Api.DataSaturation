@@ -25,6 +25,7 @@ namespace Resto.Front.Api.DataSaturation.Services
         private CancellationTokenSource cancellationSource;
         private bool isDisposed = false;
         private int isStartedUpdateProducts = 0;
+        private bool isStartedProductChanged = false;
         private readonly ConcurrentDictionary<Guid, ProductInfo> stopList = new ConcurrentDictionary<Guid, ProductInfo>();
         private bool existsUpdateProductByTimeout = false;
         private Task initUpdateProductsTask = null;
@@ -239,17 +240,20 @@ namespace Resto.Front.Api.DataSaturation.Services
                         {
                             if (isDisposed || cancellationSource.IsCancellationRequested)
                                 return;
-
-                            stopList.TryGetValue(product.Id, out ProductInfo productInStopList);
-                            var productInfo = product.GetProductInfoShort(productInStopList);
-                            if (productInfo is null || !productInfo.Any())
-                                return;
-
-                            var toSendData = new ProductInfoShortApi();
-                            toSendData.AddValuesToSendData(productInfo);
-                            await Send(toSendData);
+                            try
+                            {
+                                if(!isStartedProductChanged)
+                                {
+                                    isStartedProductChanged = true;
+                                    Task.Delay(15000).Wait(cancellationSource.Token); //ждем с токеном отмены
+                                    await UpdateProducts();
+                                }
+                            }
+                            catch (OperationCanceledException) { } //просто словили выход, не начинаем повторно отправку
+                            
                             ModifiersService.Instance.UpdateProductModifierByPriceCategory(product);
-                        }
+                        } else
+                            PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Couldn't update the products because the flag exists.");
                     }
                     catch (Exception ex)
                     {
@@ -260,6 +264,10 @@ namespace Resto.Front.Api.DataSaturation.Services
             catch (Exception ex)
             {
                 PluginContext.Log.Error($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Get error when trying to update product {product.Id}: {ex}");
+            }
+            finally
+            {
+                isStartedProductChanged = false;
             }
         }
 

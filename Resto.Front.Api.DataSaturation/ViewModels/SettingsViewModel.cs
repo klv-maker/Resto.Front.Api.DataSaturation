@@ -53,6 +53,19 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                 OnPropertyChanged(nameof(EnableOrdersService));
             }
         }
+        private string dataQR;
+        public string DataQR
+        {
+            get
+            {
+                return dataQR;
+            }
+            set
+            {
+                dataQR = value;
+                OnPropertyChanged(nameof(DataQR));
+            }
+        }
         public Action CloseAction { get; set; }
 
         private ICommand cancelCommand;
@@ -130,6 +143,7 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             }
             SwitchMediaTime = settings.SwitchMediaTime;
             EnableOrdersService = settings.EnableOrdersService;
+            DataQR = settings.DataQR;
         }
 
         public void Cancel()
@@ -146,8 +160,9 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                 {
                     addresses.Add(address.AddressApi);
                 }
-                Settings.Settings.Instance().Update(addresses, SwitchMediaTime, EnableOrdersService);
+                Settings.Settings.Instance().Update(addresses, SwitchMediaTime, EnableOrdersService, DataQR);
                 orderService.UpdateByCheckBox(EnableOrdersService);
+                orderService.UpdateDataQR(DataQR);
             }
             catch (Exception ex) 
             {

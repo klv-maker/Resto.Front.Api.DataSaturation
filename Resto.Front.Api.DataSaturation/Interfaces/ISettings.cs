@@ -7,6 +7,7 @@ namespace Resto.Front.Api.DataSaturation.Interfaces
         List<string> AdressesApi { get; }
         int SwitchMediaTime { get; }
         bool EnableOrdersService { get; }
-        void Update(List<string> addresses, int switchMediaTime, bool enableOrdersService);
+        string DataQR { get; }
+        void Update(List<string> addresses, int switchMediaTime, bool enableOrdersService, string dataQR);
     }
 }
