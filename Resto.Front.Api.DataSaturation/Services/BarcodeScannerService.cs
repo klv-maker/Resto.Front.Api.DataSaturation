@@ -43,7 +43,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 }
                 catch (Exception ex)
                 {
-                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i} ");
+                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i}. {ex}");
 
                 }
             }

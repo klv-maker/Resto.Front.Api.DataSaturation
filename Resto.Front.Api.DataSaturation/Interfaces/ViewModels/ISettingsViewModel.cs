@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Resto.Front.Api.DataSaturation.Domain.Interfaces.ViewModels;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 

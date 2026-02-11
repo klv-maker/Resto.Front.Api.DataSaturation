@@ -1,4 +1,4 @@
-﻿namespace Resto.Front.Api.DataSaturation.Helpers
+﻿namespace Resto.Front.Api.DataSaturation.Domain.Helpers
 {
     public static class Constants
     {

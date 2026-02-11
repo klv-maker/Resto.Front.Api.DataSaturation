@@ -1,5 +1,5 @@
-﻿using Resto.Front.Api.DataSaturation.Helpers;
-using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
+﻿using Resto.Front.Api.DataSaturation.Domain.Helpers;
+using Resto.Front.Api.DataSaturation.Domain.Interfaces.ViewModels;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace Resto.Front.Api.DataSaturation.Views
+namespace Resto.Front.Api.DataSaturation.Domain.Views
 {
     public class WindowOwner : IDisposable
     {

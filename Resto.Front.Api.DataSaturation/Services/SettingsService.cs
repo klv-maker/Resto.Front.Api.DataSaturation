@@ -1,4 +1,5 @@
-﻿using Resto.Front.Api.DataSaturation.Interfaces.Services;
+﻿using Resto.Front.Api.DataSaturation.Domain.Views;
+using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
 using Resto.Front.Api.DataSaturation.ViewModels;
 using Resto.Front.Api.DataSaturation.Views;
