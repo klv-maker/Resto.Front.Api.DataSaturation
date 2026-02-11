@@ -98,7 +98,7 @@
                     VerticalAlignment="Top"
                     HorizontalAlignment="Left"
                     Margin="6,0,0,0"/>
-                <TextBox  Text="{Binding DataQR}" Grid.ColumnSpan="3" FontSize="25" HorizontalAlignment="Left" Margin="88,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="406" Height="40" TextChanged="TextBox_TextChanged_1"/>
+                <TextBox  Text="{Binding DataQR}" Grid.ColumnSpan="3" FontSize="25" HorizontalAlignment="Left" Margin="88,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="406" Height="40"/>
             </Grid>
             <CheckBox Content="" HorizontalAlignment="Left" Margin="447,0,0,0" Grid.Row="1" VerticalAlignment="Center" Checked="CheckBox_Checked" IsChecked="{Binding EnableOrdersService}" />
             <Label Content="Включить отправку чеков:"

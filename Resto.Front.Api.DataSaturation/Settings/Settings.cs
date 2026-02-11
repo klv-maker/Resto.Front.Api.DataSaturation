@@ -70,7 +70,7 @@ namespace Resto.Front.Api.DataSaturation.Settings
             this.AdressesApi = addresses;
             this.SwitchMediaTime = switchMediaTime;
             this.EnableOrdersService = enableOrdersService;
-            this.DataQR = dataQR;
+            this.DataQR = dataQR == null ? "" : dataQR;
             Save();
         }
     }

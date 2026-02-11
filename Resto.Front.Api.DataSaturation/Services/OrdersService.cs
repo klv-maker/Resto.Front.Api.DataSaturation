@@ -79,6 +79,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 }
 
                 if (currentOrder.Items.Any())
+                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderScreenOpened)}] Order for sending {currentOrder}");
                     StartSendOrderInfo(currentOrder, EntityEventType.Created);
             }
         }
@@ -104,19 +105,23 @@ namespace Resto.Front.Api.DataSaturation.Services
                 {
                     currentOrder = obj.Entity;
                 }
+
                 if (currentOrder.Items.Count == 1 && (obj.EventType == EntityEventType.Created || obj.EventType == EntityEventType.Updated) && !(currentOrder.Status == OrderStatus.Bill || currentOrder.Status == OrderStatus.Closed))
                 {
+                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Sending a new order {currentOrder}, {obj.EventType}");
                     StartSendOrderInfo(currentOrder, EntityEventType.Created);
                 }
                 else
-
+                {
+                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Order update {currentOrder}, {obj.EventType}");
                     StartSendOrderInfo(currentOrder, obj.EventType);
-
+                }
             }
         }
 
         private void StartSendOrderInfo(IOrder order, EntityEventType eventType)
         {
+            PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(StartSendOrderInfo)}] EnableOrdersServiceLocal = {enableOrdersServiceLocal}");
             if (enableOrdersServiceLocal)
             {
                 if (isDisposed)
@@ -127,7 +132,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                     PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(StartSendOrderInfo)}] Get order for send {order.Id} eventType = {eventType}");
                     var orderInfo = order.OrderToOrderInfo(eventType, dataQRLocal);
                     PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(StartSendOrderInfo)}] Get orderInfo = {orderInfo.SerializeToJson()}");
-                    if (orderInfo is null)
+                    if (orderInfo is null || (orderInfo.orderStatus == OrderStatusInfo.start && order.Items.Count == 0))
                         return;
 
                     //блокируем чтобы не перебить
@@ -165,7 +170,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 data = toSendData,
                 name = "iikoBasketStatus",
-                type = ((toSendData.orderStatus.ToString() == "close") && (toSendData.visibleQR == true)) ? "update" : (toSendData.orderStatus.ToString())
+                type = ((toSendData.orderStatus == OrderStatusInfo.close) && (toSendData.visibleQR == true)) ? OrderStatusInfo.update.ToString() : (toSendData.orderStatus.ToString())
             };
             foreach (var address in Settings.Settings.Instance().AdressesApi)
             {
