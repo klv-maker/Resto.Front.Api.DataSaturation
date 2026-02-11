@@ -1,6 +1,5 @@
 ﻿using Resto.Front.Api.DataSaturation.Domain.Helpers;
-using Resto.Front.Api.DataSaturation.Helpers;
-using Resto.Front.Api.DataSaturation.Interfaces;
+using Resto.Front.Api.DataSaturation.MindBox.Interfaces;
 using System;
 using System.IO;
 

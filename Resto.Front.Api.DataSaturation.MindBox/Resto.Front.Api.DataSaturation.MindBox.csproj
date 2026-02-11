@@ -15,6 +15,14 @@
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\Resto.Front.Api.DataSaturation.Domain\Resto.Front.Api.DataSaturation.Domain.csproj" />
+	</ItemGroup>
+	<ItemGroup>
 	  <Reference Include="System.Net.Http" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="Settings\MindBoxSettings.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>

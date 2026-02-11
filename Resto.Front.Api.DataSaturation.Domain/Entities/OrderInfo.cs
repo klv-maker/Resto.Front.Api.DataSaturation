@@ -1,9 +1,9 @@
-﻿using Resto.Front.Api.DataSaturation.Helpers;
-using Resto.Front.Api.DataSaturation.Interfaces;
+﻿using Resto.Front.Api.DataSaturation.Domain.Helpers;
+using Resto.Front.Api.DataSaturation.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 
-namespace Resto.Front.Api.DataSaturation.Entities
+namespace Resto.Front.Api.DataSaturation.Domain.Entities
 {
     public class OrderInfo : IEqualsObject
     {
@@ -28,7 +28,7 @@ namespace Resto.Front.Api.DataSaturation.Entities
                 order.orderNumber != orderNumber)
                 return false;
 
-            if (!Helpers.Extensions.IsEqualsLists(items, order.items))
+            if (!CollectionsHelper.IsEqualsLists(items, order.items))
                 return false;
 
             return true;

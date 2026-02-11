@@ -1,9 +1,9 @@
-﻿using Resto.Front.Api.DataSaturation.Helpers;
-using Resto.Front.Api.DataSaturation.Interfaces;
+﻿using Resto.Front.Api.DataSaturation.Domain.Helpers;
+using Resto.Front.Api.DataSaturation.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 
-namespace Resto.Front.Api.DataSaturation.Entities
+namespace Resto.Front.Api.DataSaturation.Domain.Entities
 {
     public class ProductInfo : IEqualsObject
     {
@@ -29,7 +29,7 @@ namespace Resto.Front.Api.DataSaturation.Entities
                 return false;
 
 
-            if (!Helpers.Extensions.IsEqualsLists(productSize, productInfo.productSize))
+            if (!CollectionsHelper.IsEqualsLists(productSize, productInfo.productSize))
                 return false;
 
             return true;

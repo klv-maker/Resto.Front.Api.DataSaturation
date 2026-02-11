@@ -1,21 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
-using Resto.Front.Api.Data.Assortment;
-using Resto.Front.Api.DataSaturation.Entities;
+﻿using Resto.Front.Api.Data.Assortment;
+using Resto.Front.Api.DataSaturation.Domain.Entities;
+using Resto.Front.Api.DataSaturation.Domain.Helpers;
 using Resto.Front.Api.DataSaturation.Helpers;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.UI;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
-using System.Windows.Documents;
-using Resto.Front.Api.DataSaturation.Domain.Helpers;
 
 
 namespace Resto.Front.Api.DataSaturation.Services

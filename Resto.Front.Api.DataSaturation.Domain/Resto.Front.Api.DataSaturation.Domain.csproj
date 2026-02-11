@@ -10,6 +10,7 @@
 	  <Folder Include="Properties\" />
 	</ItemGroup>
 	<ItemGroup>
+	  <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	  <PackageReference Include="Resto.Front.Api.V8" Version="8.7.6032" />
 	</ItemGroup>

@@ -12,14 +12,13 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="System.Runtime" Version="4.3.1" />
 		<PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Resto.Front.Api.DataSaturation.Domain\Resto.Front.Api.DataSaturation.Domain.csproj" />
+	  <ProjectReference Include="..\Resto.Front.Api.DataSaturation.MindBox\Resto.Front.Api.DataSaturation.MindBox.csproj" />
 	</ItemGroup>
     <ItemGroup>
         <Reference Include="System" />
@@ -106,9 +105,6 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="Resources\WpfAnimatedGif.dll">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="Settings\MindBoxSettings.xml">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

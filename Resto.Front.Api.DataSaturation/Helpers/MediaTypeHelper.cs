@@ -1,10 +1,5 @@
-﻿using Resto.Front.Api.DataSaturation.Entities;
-using System;
-using System.Collections.Generic;
+﻿using Resto.Front.Api.DataSaturation.Domain.Entities;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Resto.Front.Api.DataSaturation.Helpers
 {

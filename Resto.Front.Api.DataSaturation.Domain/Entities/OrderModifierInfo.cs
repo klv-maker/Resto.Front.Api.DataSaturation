@@ -1,8 +1,7 @@
-﻿using Resto.Front.Api.DataSaturation.Helpers;
-using Resto.Front.Api.DataSaturation.Interfaces;
+﻿using Resto.Front.Api.DataSaturation.Domain.Interfaces;
 using System;
 
-namespace Resto.Front.Api.DataSaturation.Entities
+namespace Resto.Front.Api.DataSaturation.Domain.Entities
 {
     public class OrderModifierInfo : IEqualsObject
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Resto.Front.Api.DataSaturation.Entities
+namespace Resto.Front.Api.DataSaturation.Domain.Entities
 {
     public class ProductInfoShortApi
     {

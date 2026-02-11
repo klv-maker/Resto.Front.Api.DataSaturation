@@ -1,11 +1,11 @@
 ﻿using Resto.Front.Api.Data.Assortment;
 using Resto.Front.Api.DataSaturation.Domain.Entities;
-using Resto.Front.Api.DataSaturation.Interfaces.Services;
+using Resto.Front.Api.DataSaturation.Domain.Interfaces.Services;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
 
-namespace Resto.Front.Api.DataSaturation.Services
+namespace Resto.Front.Api.DataSaturation.Domain.Services
 {
     public class ModifiersService : IModifiersService
     {

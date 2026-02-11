@@ -1,8 +1,9 @@
-﻿using Resto.Front.Api.DataSaturation.Interfaces;
+﻿using Resto.Front.Api.DataSaturation.Domain.Helpers;
+using Resto.Front.Api.DataSaturation.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 
-namespace Resto.Front.Api.DataSaturation.Entities
+namespace Resto.Front.Api.DataSaturation.Domain.Entities
 {
     public class OrderItemInfo : IEqualsObject
     {
@@ -37,7 +38,7 @@ namespace Resto.Front.Api.DataSaturation.Entities
                 printTime != orderItem.printTime)
                 return false;
 
-            if (!Helpers.Extensions.IsEqualsLists(modifiers, orderItem.modifiers))
+            if (!CollectionsHelper.IsEqualsLists(modifiers, orderItem.modifiers))
                 return false;
 
             return true;

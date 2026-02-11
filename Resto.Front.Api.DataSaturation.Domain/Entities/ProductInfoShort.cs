@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Resto.Front.Api.DataSaturation.Entities
+namespace Resto.Front.Api.DataSaturation.Domain.Entities
 {
     public class ProductInfoShort
     {
