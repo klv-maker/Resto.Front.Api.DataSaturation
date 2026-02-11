@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Resto.Front.Api.Data.Brd;
+using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
