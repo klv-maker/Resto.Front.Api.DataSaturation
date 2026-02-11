@@ -2,26 +2,24 @@
 using Resto.Front.Api.DataSaturation.Helpers;
 using Resto.Front.Api.DataSaturation.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
 namespace Resto.Front.Api.DataSaturation.Settings
 {
-    public partial class Settings
+    public partial class MindBoxSettings
     {
-        private static ISettings instance;
-        private Settings() { }
-        private static string ConfigFileName = "Settings.xml";
-        private const string baseServerUrl = "http://192.168.0.227:8080/json.rpc";
+        private static IMindBoxSettings instance;
+        private static string ConfigFileName = "MindBoxSettings.xml";
         private static string FilePath
         {
             get { return Path.GetFullPath(Path.Combine(PluginContext.Integration.GetConfigsDirectoryPath(), ConfigFileName)); }
         }
+
+        private MindBoxSettings() { }
         /// <summary>
         /// instance for work with settings
         /// </summary>
-        public static ISettings Instance()
+        public static IMindBoxSettings Instance()
         {
             if (instance == null)
             {
@@ -29,8 +27,7 @@ namespace Resto.Front.Api.DataSaturation.Settings
                 if (File.Exists(settingsFilePath))
                 {
                     var settingsXml = File.ReadAllText(settingsFilePath);
-                    PluginContext.Log.Info(settingsXml);
-                    instance = SerializeHelper.DeserializeFromXml<Settings>(settingsXml);
+                    instance = SerializeHelper.DeserializeFromXml<MindBoxSettings>(settingsXml);
                 }
                 else
                     CreateSettingsIfNotExists();
@@ -40,11 +37,10 @@ namespace Resto.Front.Api.DataSaturation.Settings
 
         private static void CreateSettingsIfNotExists()
         {
-            var settings = new Settings()
+            var settings = new MindBoxSettings()
             {
-                AdressesApi = new List<string>() { baseServerUrl },
-                SwitchMediaTime = 60,
-                EnableOrdersService = false
+                AddressApi = string.Empty,
+                Key = string.Empty
             };
             settings.Save();
             instance = settings;
@@ -54,26 +50,23 @@ namespace Resto.Front.Api.DataSaturation.Settings
         {
             try
             {
-                PluginContext.Log.InfoFormat("Saving config to {0}", FilePath);
+                PluginContext.Log.InfoFormat("Saving mind box config to {0}", FilePath);
                 this.SerializeToFileXml(FilePath);
                 instance = this;
             }
             catch (Exception e)
             {
-                PluginContext.Log.Error("Failed to save config.", e);
+                PluginContext.Log.Error("Failed to save mind box config.", e);
             }
         }
 
-        public void Update(List<string> addresses, int switchMediaTime, bool enableOrdersService)
+        public void Update(string address, string key)
         {
-            PluginContext.Log.Info($"Start update settings with values {string.Join(",", addresses)}");
-            this.AdressesApi = addresses;
-            this.SwitchMediaTime = switchMediaTime;
-            this.EnableOrdersService = enableOrdersService;
+            this.AddressApi = address;
+            this.Key = key;
             Save();
         }
     }
-
 
     // Примечание. Для запуска созданного кода может потребоваться NET Framework версии 4.5 или более поздней версии и .NET Core или Standard версии 2.0 или более поздней.
     /// <remarks/>
@@ -81,54 +74,36 @@ namespace Resto.Front.Api.DataSaturation.Settings
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
     [System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false)]
-    public partial class Settings : ISettings
+    public partial class MindBoxSettings : IMindBoxSettings
     {
+        private string addressApiField;
 
-        private List<string> adressesApiField;
-
-        private int switchMediaTimeField;
-
-        private bool enableOrdersServiceField;
+        private string keyField;
 
         /// <remarks/>
-        [System.Xml.Serialization.XmlArrayItemAttribute("Address", IsNullable = false)]
-        public List<string> AdressesApi
+        public string AddressApi
         {
             get
             {
-                return this.adressesApiField;
+                return this.addressApiField;
             }
             set
             {
-                this.adressesApiField = value;
+                this.addressApiField = value;
             }
         }
 
         /// <remarks/>
-        public int SwitchMediaTime
+        public string Key
         {
             get
             {
-                return this.switchMediaTimeField;
+                return this.keyField;
             }
             set
             {
-                this.switchMediaTimeField = value;
-            }
-        }
-
-        public bool EnableOrdersService
-        {
-            get
-            {
-                return this.enableOrdersServiceField;
-            }
-            set
-            {
-                this.enableOrdersServiceField = value;
+                this.keyField = value;
             }
         }
     }
-
-
 }

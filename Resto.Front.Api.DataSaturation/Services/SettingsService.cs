@@ -13,11 +13,9 @@ namespace Resto.Front.Api.DataSaturation.Services
         private WindowOwner windowOwner;
         private ISettingsViewModel settingsViewModel;
         private bool isDisposed = false;
-        private ILockService lockService;
         private IOrdersService orderService;
-        public SettingsService(ILockService lockService, IOrdersService orderService)
+        public SettingsService(IOrdersService orderService)
         {
-            this.lockService = lockService;
             this.orderService = orderService;
             subscriptions.Add(PluginContext.Operations.AddButtonToPluginsMenu("DataSaturationPlugin.Settings", ShowSettingsPlugin));
         }
@@ -46,7 +44,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 windowOwner = null;
             }
             windowOwner = new WindowOwner();            
-            settingsViewModel = new SettingsViewModel(lockService, orderService, Settings.Settings.Instance());
+            settingsViewModel = new SettingsViewModel(orderService, Settings.Settings.Instance());
             windowOwner.ShowDialog<SettingsWindow>(settingsViewModel);
         }
 

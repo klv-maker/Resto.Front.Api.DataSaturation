@@ -111,12 +111,10 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 
-        private ILockService lockService;
         private IOrdersService orderService;
 
-        public SettingsViewModel(ILockService lockService, IOrdersService orderService, ISettings settings) 
+        public SettingsViewModel(IOrdersService orderService, ISettings settings) 
         {
-            this.lockService = lockService;
             this.orderService = orderService;
             Update(settings);
         }

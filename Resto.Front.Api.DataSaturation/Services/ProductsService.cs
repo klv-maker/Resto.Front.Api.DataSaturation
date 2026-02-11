@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.IO;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
 using System.Windows.Documents;
+using Resto.Front.Api.DataSaturation.Domain.Helpers;
 
 
 namespace Resto.Front.Api.DataSaturation.Services
