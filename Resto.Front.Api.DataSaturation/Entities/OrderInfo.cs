@@ -11,7 +11,10 @@ namespace Resto.Front.Api.DataSaturation.Entities
         public int orderNumber { get; set; }
         public OrderStatusInfo orderStatus { get; set; }
         public List<OrderItemInfo> items { get; set; }
-        public decimal sum { get; set; }
+        public decimal sumWithoutDiscounts { get; set; }
+        public decimal sumWithDiscounts { get; set; }
+        public bool visibleQR { get; set; }
+        public string dataQR { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -20,7 +23,8 @@ namespace Resto.Front.Api.DataSaturation.Entities
 
             if (order.id != id ||
                 order.orderStatus != orderStatus ||
-                order.sum != sum ||
+                order.sumWithoutDiscounts != sumWithoutDiscounts ||
+                order.sumWithDiscounts != sumWithDiscounts ||
                 order.orderNumber != orderNumber)
                 return false;
 
@@ -32,7 +36,7 @@ namespace Resto.Front.Api.DataSaturation.Entities
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(id, orderNumber, orderStatus, items, sum);
+            return HashCode.Combine(id, orderNumber, orderStatus, items, sumWithoutDiscounts);
         }
     }
 }

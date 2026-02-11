@@ -35,9 +35,17 @@ namespace Resto.Front.Api.DataSaturation.Services
             PluginContext.Log.Info("Совпадает с payload.totp: " + matches);
             if (matches)
             {
-                var client = obj.os.GetClientById(Guid.Parse(payload.i));
-                obj.os.AddClientToOrder(obj.order, client, obj.os.GetDefaultCredentials());
-                PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.Id} {client.Surname} {client.Name} to order {obj.order.Id} {obj.order.Number}");
+                try
+                {
+                    var client = obj.os.GetClientById(Guid.Parse(payload.i));
+                    obj.os.AddClientToOrder(obj.order, client, obj.os.GetDefaultCredentials());
+                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.Id} {client.Surname} {client.Name} to order {obj.order.Id} {obj.order.Number}");
+                }
+                catch (Exception ex)
+                {
+                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i} ");
+
+                }
             }
             return matches;
         }
