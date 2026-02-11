@@ -1,4 +1,4 @@
-﻿using Resto.Front.Api.DataSaturation.MindBox.Interfaces;
+﻿using Resto.Front.Api.DataSaturation.MindBox.Interfaces.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
