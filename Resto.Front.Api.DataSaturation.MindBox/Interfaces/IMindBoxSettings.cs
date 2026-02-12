@@ -4,5 +4,6 @@
     {
         string AddressApi {  get; }
         string Key { get; }
+        void Update(string address, string key);
     }
 }

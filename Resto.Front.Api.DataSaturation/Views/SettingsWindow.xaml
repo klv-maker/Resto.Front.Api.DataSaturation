@@ -75,7 +75,7 @@
                         FontWeight="Medium"
                         Background="LightGray"
                         Command="{Binding AddCommand}"
-                        VerticalContentAlignment="Center"/>
+                        VerticalContentAlignment="Top"/>
             </Grid>
         </Grid>
         <DockPanel Grid.Row="1">
@@ -90,10 +90,10 @@
                     Height="40"
                     BorderThickness="1"
                     Margin="5,0,5,0"
+                    HorizontalAlignment="Right"
                     Width="400">
                 <TextBox Text="{Binding DataQR}"
                          FontSize="25"
-                         HorizontalAlignment="Right"
                          TextWrapping="Wrap"
                          Width="400"/>
             </Border>
@@ -112,6 +112,7 @@
                       Grid.Column="1"
                       VerticalAlignment="Center" 
                       Checked="CheckBox_Checked"
+                      VerticalContentAlignment="Center"
                       IsChecked="{Binding EnableOrdersService}" 
                       Height="15"
                       Width="20" />

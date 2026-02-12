@@ -1,7 +1,11 @@
 ﻿using Resto.Front.Api.Attributes;
 using Resto.Front.Api.Attributes.JetBrains;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
+using Resto.Front.Api.DataSaturation.MindBox.Interfaces;
+using Resto.Front.Api.DataSaturation.MindBox.Interfaces.Services;
+using Resto.Front.Api.DataSaturation.MindBox.Services;
 using Resto.Front.Api.DataSaturation.Services;
+using Resto.Front.Api.DataSaturation.Settings;
 using System;
 
 namespace Resto.Front.Api.DataSaturation
@@ -17,6 +21,8 @@ namespace Resto.Front.Api.DataSaturation
         private readonly IScreensService screensService;
         private readonly ILockService lockScreenService;
         private readonly IBarcodeScannerService barcodeScannerService;
+        private readonly IMindBoxService mindBoxService;
+        private readonly IMindBoxSettingsService mindBoxSettingsService;
 
         public DataSaturationPlugin()
         {
@@ -28,6 +34,8 @@ namespace Resto.Front.Api.DataSaturation
             ordersService = new OrdersService(screensService, Settings.Settings.Instance().EnableOrdersService, Settings.Settings.Instance().DataQR);
             settingsService = new SettingsService(ordersService);
             barcodeScannerService = new BarcodeScannerService();
+            mindBoxSettingsService = new MindBoxSettingsService();
+            mindBoxService = new MindBoxService(MindBoxSettings.Instance());
         }
 
         public void Dispose()
@@ -39,6 +47,8 @@ namespace Resto.Front.Api.DataSaturation
             screensService.Dispose();
             lockScreenService.Dispose();
             ModifiersService.Instance.Dispose();
+            mindBoxSettingsService.Dispose();
+            mindBoxService.Dispose();
         }
     }
 }
