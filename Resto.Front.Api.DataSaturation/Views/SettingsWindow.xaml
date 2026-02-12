@@ -7,10 +7,12 @@
         mc:Ignorable="d"
         WindowStyle="None"
         WindowState="Normal"
-        Title="SettingsWindow" Height="600" Width="500">
+        Title="SettingsWindow" Height="700" Width="500">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="8*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -53,63 +55,68 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Grid Margin="0,373,0,53" Grid.RowSpan="2">
+            <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="290*"/>
-                    <ColumnDefinition Width="127*"/>
-                    <ColumnDefinition Width="83*"/>
+                    <ColumnDefinition Width="8*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Label Content="Добавить новый адрес апи"
                        Height="50"
                        FontSize="15"
                        VerticalContentAlignment="Center"
-                       VerticalAlignment="Top"
-                       HorizontalAlignment="Right"
-                       Margin="0,-56,5,0" Grid.ColumnSpan="2"/>
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"/>
                 <Button Content="+"
-                        Grid.Column="2"
-                        Margin="14,-52,19,0"
-                        Width="50"
-                        Height="50"
+                        Grid.Column="1"
+                        Width="40"
+                        Height="40"
                         FontSize="25"
+                        HorizontalAlignment="Center"
                         FontWeight="Medium"
                         Background="LightGray"
                         Command="{Binding AddCommand}"
-                        VerticalAlignment="Top"
                         VerticalContentAlignment="Center"/>
-                <Label Content="Добавить новый адрес апи"
-                    Height="50"
-                    FontSize="15"
-                    VerticalContentAlignment="Center"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Right"
-                    Margin="0,-56,5,0" Grid.ColumnSpan="2"/>
-                <Label Content="Добавить новый адрес апи"
-                    Height="50"
-                    FontSize="15"
-                    VerticalContentAlignment="Center"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Right"
-                    Margin="0,-56,5,0" Grid.ColumnSpan="2"/>
-                <Label Content="QR-код:"
-                    Height="50"
-                    FontSize="15"
-                    VerticalContentAlignment="Center"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Left"
-                    Margin="6,0,0,0"/>
-                <TextBox  Text="{Binding DataQR}" Grid.ColumnSpan="3" FontSize="25" HorizontalAlignment="Left" Margin="88,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="406" Height="40"/>
             </Grid>
-            <CheckBox Content="" HorizontalAlignment="Left" Margin="447,0,0,0" Grid.Row="1" VerticalAlignment="Center" Checked="CheckBox_Checked" IsChecked="{Binding EnableOrdersService}" />
-            <Label Content="Включить отправку чеков:"
-                Height="50"
-                FontSize="15"
-                VerticalContentAlignment="Center"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Left"
-                Margin="221,0,0,0" Grid.Row="1"/>
         </Grid>
         <DockPanel Grid.Row="1">
+            <Label Content="QR-код:"
+                    Height="50"
+                    FontSize="15"
+                    VerticalContentAlignment="Center"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Left"
+                    Margin="6,0,0,0" />
+            <Border BorderBrush="Black"
+                    Height="40"
+                    BorderThickness="1"
+                    Margin="5,0,5,0"
+                    Width="400">
+                <TextBox Text="{Binding DataQR}"
+                         FontSize="25"
+                         HorizontalAlignment="Right"
+                         TextWrapping="Wrap"
+                         Width="400"/>
+            </Border>
+        </DockPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label Content="Включить отправку чеков:"
+                   Height="50"
+                   FontSize="15"
+                   VerticalContentAlignment="Center"
+                   HorizontalAlignment="Right"/>
+            <CheckBox Content=""
+                      Grid.Column="1"
+                      VerticalAlignment="Center" 
+                      Checked="CheckBox_Checked"
+                      IsChecked="{Binding EnableOrdersService}" 
+                      Height="15"
+                      Width="20" />
+        </Grid>
+        <DockPanel Grid.Row="3">
             <Label Content="Через сколько автоматически сменить контент:"
                    Height="50"
                    FontSize="15"
@@ -123,18 +130,18 @@
                     Margin="5,0,5,0"
                     Width="140">
                 <TextBox Text="{Binding SwitchMediaTime}"
-                     FontSize="25"
-                     HorizontalContentAlignment="Center"
-                     VerticalContentAlignment="Center"
-                     TextChanged="TextBox_TextChanged"
-                     PreviewTextInput="TextBox_PreviewTextInput"
-                     Height="40"
-                     Width="140"                 
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Bottom" Margin="0,0,0,-1"/>
+                         FontSize="25"
+                         HorizontalContentAlignment="Center"
+                         VerticalContentAlignment="Center"
+                         TextChanged="TextBox_TextChanged"
+                         PreviewTextInput="TextBox_PreviewTextInput"
+                         Height="40"
+                         Width="140"                 
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
             </Border>
         </DockPanel>
-        <Grid Grid.Row="2" Margin="5,0,5,0">
+        <Grid Grid.Row="4" Margin="5,0,5,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>

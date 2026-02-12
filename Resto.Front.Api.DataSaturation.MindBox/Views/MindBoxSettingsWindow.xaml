@@ -5,8 +5,46 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Resto.Front.Api.DataSaturation.MindBox.Views"
         mc:Ignorable="d"
-        Title="MindBoxSettingsWindow" Height="450" Width="800">
+        WindowStyle="None"
+        WindowState="Normal"
+        Title="SettingsWindow" Height="300" Width="500">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="8*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+        </Grid>
+        <Grid Grid.Row="1" Margin="5,0,5,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="Cancel"
+                    HorizontalAlignment="Left"
+                    Grid.Column="0"
+                    Width="100"
+                    Height="50"
+                    FontSize="25"
+                    FontWeight="Medium"
+                    Background="Red"
+                    Command="{Binding CancelCommand}"
+                    VerticalAlignment="Center"/>
+            <Button Content="Save"
+                    Margin="10,0,0,0"
+                    Grid.Column="1"
+                    Width="100"
+                    Height="50"
+                    FontSize="25"
+                    FontWeight="Medium"
+                    Background="#32CD32"
+                    Command="{Binding SaveCommand}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"/>
+        </Grid>
     </Grid>
 </Window>
