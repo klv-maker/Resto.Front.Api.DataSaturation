@@ -5,5 +5,6 @@
         public const string UpdateProducts = "updateProducts";
         public const string AddEvent = "addEvent";
         public const string AppProcessName = "iikoFront.Net";
+        public const string WrongToken = "Wrong access token";
     }
 }

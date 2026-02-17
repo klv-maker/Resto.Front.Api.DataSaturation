@@ -3,11 +3,14 @@ using Resto.Front.Api.DataSaturation.Domain.Entities;
 using Resto.Front.Api.DataSaturation.Domain.Helpers;
 using Resto.Front.Api.DataSaturation.Helpers;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
+using Resto.Front.Api.Extensions;
 using Resto.Front.Api.UI;
 using System;
 using System.Reactive.Disposables;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Resto.Front.Api.DataSaturation.Services
 {
@@ -15,8 +18,11 @@ namespace Resto.Front.Api.DataSaturation.Services
     {
         private readonly CompositeDisposable subscriptions = new CompositeDisposable();
         private bool isDisposed = false;
-        public BarcodeScannerService() 
+        private readonly IIikoCardService iikoCardService;
+        private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        public BarcodeScannerService(IIikoCardService iikoCardService) 
         {
+            this.iikoCardService = iikoCardService;
             subscriptions.Add(PluginContext.Notifications.OrderEditBarcodeScanned.Subscribe(BarcodeScanned));
         }
 
@@ -35,19 +41,30 @@ namespace Resto.Front.Api.DataSaturation.Services
             PluginContext.Log.Info("Совпадает с payload.totp: " + matches);
             if (matches)
             {
-                try
+                Task.Run(async () =>
                 {
-                    var client = obj.os.GetClientById(Guid.Parse(payload.i));
-                    obj.os.AddClientToOrder(obj.order, client, obj.os.GetDefaultCredentials());
-                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.Id} {client.Surname} {client.Name} to order {obj.order.Id} {obj.order.Number}");
-                }
-                catch (Exception ex)
-                {
-                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i}. {ex}");
-
-                }
+                    await AddCustomerToOrder(obj.order, obj.os, payload.i);
+                }, cancellationTokenSource.Token);
             }
             return matches;
+        }
+
+        private async Task AddCustomerToOrder(IOrder order, IOperationService os, string customerId)
+        {
+            try
+            {
+                var client = await iikoCardService.GetCustomerAsync(customerId, cancellationTokenSource.Token); 
+                if (client == null) 
+                    return;
+
+                var editSession = os.CreateEditSession();
+                editSession.RenameOrderGuest(client.id, client.name, order);
+                PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.id} {client.surname} {client.name} to order {order.Id} {order.Number}");
+            }
+            catch (Exception ex)
+            {
+                PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {customerId}. {ex}");
+            }
         }
 
         static string DeriveSecret(string master, string customerId)
@@ -105,6 +122,8 @@ namespace Resto.Front.Api.DataSaturation.Services
                 return;
 
             isDisposed = true;
+            cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
             subscriptions?.Dispose();
         }
     }

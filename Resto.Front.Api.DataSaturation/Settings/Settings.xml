@@ -5,4 +5,10 @@
 		<Address>http://192.168.0.227:8080/json.rpc</Address>
 	</AdressesApi>
 	<SwitchMediaTime>60</SwitchMediaTime>
+	<IikoCard>
+		<Address>https://coffeelike.iiko.ru/api/0/</Address>
+		<User>headline</User>
+		<Secret>AlP9rhGSvQ</Secret>
+		<Organization>7ac81853-b2df-11e9-80e9-d8d38565926f</Organization>
+	</IikoCard>
 </Settings>

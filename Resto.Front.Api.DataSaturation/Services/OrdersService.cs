@@ -41,13 +41,9 @@ namespace Resto.Front.Api.DataSaturation.Services
             dataQRLocal = dataQR;
         }
 
-        public void UpdateByCheckBox(bool enableOrdersService)
+        public void UpdateSettings(bool enableOrdersService, string dataQR)
         {
             enableOrdersServiceLocal = enableOrdersService;
-        }
-
-        public void UpdateDataQR(string dataQR)
-        {
             dataQRLocal = dataQR;
         }
 

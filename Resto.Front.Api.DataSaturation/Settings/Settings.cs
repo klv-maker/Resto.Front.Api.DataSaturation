@@ -45,7 +45,8 @@ namespace Resto.Front.Api.DataSaturation.Settings
                 AdressesApi = new List<string>() { baseServerUrl },
                 SwitchMediaTime = 60,
                 EnableOrdersService = false,
-                DataQR = ""
+                DataQR = "",
+                IikoCard = new IikoCard()
             };
             settings.Save();
             instance = settings;
@@ -65,13 +66,14 @@ namespace Resto.Front.Api.DataSaturation.Settings
             }
         }
 
-        public void Update(List<string> addresses, int switchMediaTime, bool enableOrdersService, string dataQR)
+        public void Update(List<string> addresses, int switchMediaTime, bool enableOrdersService, string dataQR, IikoCard iikoCard)
         {
             PluginContext.Log.Info($"Start update settings with values {string.Join(",", addresses)}");
             this.AdressesApi = addresses;
             this.SwitchMediaTime = switchMediaTime;
             this.EnableOrdersService = enableOrdersService;
             this.DataQR = dataQR == null ? "" : dataQR;
+            this.IikoCard = iikoCard;
             Save();
         }
     }
@@ -92,6 +94,7 @@ namespace Resto.Front.Api.DataSaturation.Settings
 
         private bool enableOrdersServiceField;
         private string dataQRField;
+        private IikoCard iikoCardField = new IikoCard();
 
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("Address", IsNullable = false)]
@@ -143,7 +146,86 @@ namespace Resto.Front.Api.DataSaturation.Settings
                 this.dataQRField = value;
             }
         }
+
+        public IikoCard IikoCard
+        {
+            get
+            {
+                return iikoCardField;
+            }
+            set
+            {
+                iikoCardField = value;
+            }
+        }
     }
 
+    // Примечание. Для запуска созданного кода может потребоваться NET Framework версии 4.5 или более поздней версии и .NET Core или Standard версии 2.0 или более поздней.
+    /// <remarks/>
+    [System.SerializableAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    [System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false)]
+    public partial class IikoCard
+    {
 
+        private string addressField;
+
+        private string userField;
+
+        private string secretField;
+
+        private Guid organizationField;
+
+        /// <remarks/>
+        public string Address
+        {
+            get
+            {
+                return this.addressField;
+            }
+            set
+            {
+                this.addressField = value;
+            }
+        }
+
+        /// <remarks/>
+        public string User
+        {
+            get
+            {
+                return this.userField;
+            }
+            set
+            {
+                this.userField = value;
+            }
+        }
+
+        /// <remarks/>
+        public string Secret
+        {
+            get
+            {
+                return this.secretField;
+            }
+            set
+            {
+                this.secretField = value;
+            }
+        }
+
+        public Guid Organization
+        {
+            get
+            {
+                return this.organizationField;
+            }
+            set
+            {
+                this.organizationField = value;
+            }
+        }
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Resto.Front.Api.DataSaturation.Settings;
+using System.Collections.Generic;
 
 namespace Resto.Front.Api.DataSaturation.Interfaces
 {
@@ -8,6 +9,7 @@ namespace Resto.Front.Api.DataSaturation.Interfaces
         int SwitchMediaTime { get; }
         bool EnableOrdersService { get; }
         string DataQR { get; }
-        void Update(List<string> addresses, int switchMediaTime, bool enableOrdersService, string dataQR);
+        IikoCard IikoCard { get; }
+        void Update(List<string> addresses, int switchMediaTime, bool enableOrdersService, string dataQR, IikoCard iikoCard);
     }
 }

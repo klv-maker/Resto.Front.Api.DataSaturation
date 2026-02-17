@@ -14,4 +14,7 @@
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	  <PackageReference Include="Resto.Front.Api.V8" Version="8.7.6032" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Reference Include="System.Net.Http" />
+	</ItemGroup>
 </Project>

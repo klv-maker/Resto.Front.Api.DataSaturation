@@ -7,6 +7,6 @@ namespace Resto.Front.Api.DataSaturation.MindBox.Interfaces
 {
     public interface IMindBoxService : IDisposable
     {
-        Task<CustomerInfo> CheckCustomer(string pointOfContact, string mobilePhone, CancellationToken cancellationToken);
+        Task<CustomerInfo> CheckCustomer(string mobilePhone, CancellationToken cancellationToken);
     }
 }

@@ -2,13 +2,13 @@
 using Resto.Front.Api.DataSaturation.Interfaces;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
+using Resto.Front.Api.DataSaturation.Settings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace Resto.Front.Api.DataSaturation.ViewModels
 {
@@ -64,6 +64,20 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             {
                 dataQR = value;
                 OnPropertyChanged(nameof(DataQR));
+            }
+        }
+
+        private IikoCard iikoCard;
+        public IikoCard IikoCard
+        {
+            get 
+            {
+                return iikoCard;
+            }
+            set 
+            {
+                iikoCard = value;
+                OnPropertyChanged(nameof(IikoCard));
             }
         }
         public Action CloseAction { get; set; }
@@ -125,10 +139,12 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
         }
 
         private IOrdersService orderService;
+        private IIikoCardService iikoCardService;
 
-        public SettingsViewModel(IOrdersService orderService, ISettings settings) 
+        public SettingsViewModel(IOrdersService orderService, IIikoCardService iikoCardService, ISettings settings) 
         {
             this.orderService = orderService;
+            this.iikoCardService = iikoCardService;
             Update(settings);
         }
 
@@ -142,6 +158,7 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             SwitchMediaTime = settings.SwitchMediaTime;
             EnableOrdersService = settings.EnableOrdersService;
             DataQR = settings.DataQR;
+            IikoCard = settings.IikoCard;
         }
 
         public void Cancel()
@@ -158,9 +175,9 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                 {
                     addresses.Add(address.AddressApi);
                 }
-                Settings.Settings.Instance().Update(addresses, SwitchMediaTime, EnableOrdersService, DataQR);
-                orderService.UpdateByCheckBox(EnableOrdersService);
-                orderService.UpdateDataQR(DataQR);
+                Settings.Settings.Instance().Update(addresses, SwitchMediaTime, EnableOrdersService, DataQR, IikoCard);
+                orderService.UpdateSettings(EnableOrdersService, DataQR);
+                iikoCardService.UpdateSettings(IikoCard);
             }
             catch (Exception ex) 
             {

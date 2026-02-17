@@ -1,4 +1,5 @@
 ﻿using Resto.Front.Api.DataSaturation.Domain.Interfaces.ViewModels;
+using Resto.Front.Api.DataSaturation.Settings;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -9,7 +10,8 @@ namespace Resto.Front.Api.DataSaturation.Interfaces.ViewModels
         ObservableCollection<IAddressViewModel> AddressViewModels { get; }
         int SwitchMediaTime { get; set; }
         bool EnableOrdersService { get; set; }
-        string DataQR {  get; set; }
+        string DataQR { get; set; }
+        IikoCard IikoCard { get; set; }
         ICommand CancelCommand { get; }
         ICommand SaveCommand { get; }
         ICommand AddCommand { get; }

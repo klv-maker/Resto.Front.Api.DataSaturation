@@ -15,9 +15,11 @@ namespace Resto.Front.Api.DataSaturation.Services
         private ISettingsViewModel settingsViewModel;
         private bool isDisposed = false;
         private IOrdersService orderService;
-        public SettingsService(IOrdersService orderService)
+        private IIikoCardService iikoCardService;
+        public SettingsService(IOrdersService orderService, IIikoCardService iikoCardService)
         {
             this.orderService = orderService;
+            this.iikoCardService = iikoCardService;
             subscriptions.Add(PluginContext.Operations.AddButtonToPluginsMenu("DataSaturationPlugin.Settings", ShowSettingsPlugin));
         }
 
@@ -45,7 +47,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 windowOwner = null;
             }
             windowOwner = new WindowOwner();            
-            settingsViewModel = new SettingsViewModel(orderService, Settings.Settings.Instance());
+            settingsViewModel = new SettingsViewModel(orderService, iikoCardService, Settings.Settings.Instance());
             windowOwner.ShowDialog<SettingsWindow>(settingsViewModel);
         }
 
