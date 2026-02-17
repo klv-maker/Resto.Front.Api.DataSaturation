@@ -86,31 +86,37 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 if (isDisposed)
                     return;
+                try
+                {
 
-                PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] OrderChanged obj.Entity is null = {obj.Entity is null}");
-                if (obj.Entity is null)
-                    return;
+                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] OrderChanged obj.Entity is null = {obj.Entity is null}");
+                    if (obj.Entity is null)
+                        return;
 
-                PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Get order {obj.Entity.Id} {obj.Entity.Number}");
-                if (obj.Entity.Id != currentOrder.Id)
-                {
-                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Order changed is not current order {currentOrder.Id} {currentOrder.Number}");
-                    return;
-                }
-                lock (lockerCurrentOrder)
-                {
-                    currentOrder = obj.Entity;
-                }
+                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Get order {obj.Entity.Id} {obj.Entity.Number}");
+                    if (obj.Entity.Id != currentOrder?.Id)
+                    {
+                        PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Order changed is not current order {currentOrder.Id} {currentOrder.Number}");
+                        return;
+                    }
+                    lock (lockerCurrentOrder)
+                    {
+                        currentOrder = obj.Entity;
+                    }
 
-                if (currentOrder.Items.Count == 1 && (obj.EventType == EntityEventType.Created || obj.EventType == EntityEventType.Updated) && !(currentOrder.Status == OrderStatus.Bill || currentOrder.Status == OrderStatus.Closed))
+                    if (currentOrder.Items.Count == 1 && (obj.EventType == EntityEventType.Created || obj.EventType == EntityEventType.Updated) && !(currentOrder.Status == OrderStatus.Bill || currentOrder.Status == OrderStatus.Closed))
+                    {
+                        PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Sending a new order {currentOrder}, {obj.EventType}");
+                        StartSendOrderInfo(currentOrder, EntityEventType.Created);
+                    }
+                    else
+                    {
+                        PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Order update {currentOrder}, {obj.EventType}");
+                        StartSendOrderInfo(currentOrder, obj.EventType);
+                    }
+                } catch (Exception ex)
                 {
-                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Sending a new order {currentOrder}, {obj.EventType}");
-                    StartSendOrderInfo(currentOrder, EntityEventType.Created);
-                }
-                else
-                {
-                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] Order update {currentOrder}, {obj.EventType}");
-                    StartSendOrderInfo(currentOrder, obj.EventType);
+                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(OrderChanged)}] {ex}");
                 }
             }
         }
@@ -182,11 +188,12 @@ namespace Resto.Front.Api.DataSaturation.Services
 
             try
             {
-                var client = new JsonRpcClient(url);
-                PluginContext.Log.Info(url);
-
-                var response = await client.SendRequestAsync(Constants.AddEvent, cancellationSource.Token, toSendData);
-                PluginContext.Log.Info(response);
+                using (var client = new JsonRpcClient(url))
+                {
+                    PluginContext.Log.Info(url);
+                    var response = await client.SendRequestAsync(Constants.AddEvent, cancellationSource.Token, toSendData);
+                    PluginContext.Log.Info(response);
+                }
             }
             catch (TaskCanceledException ex)
             {
