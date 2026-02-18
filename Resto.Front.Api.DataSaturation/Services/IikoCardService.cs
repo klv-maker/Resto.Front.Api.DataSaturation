@@ -57,6 +57,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (client is null)
                 return;
 
+            token = null;
             var result = await client.ExecuteGetRequestAsync($"/api/0/auth/access_token?user_id={user}&user_secret={password}", cancellationToken);
             if (string.IsNullOrWhiteSpace(result))
             {
@@ -72,17 +73,21 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (client is null)
                 return;
 
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                Auth(cancellationToken);
+                return;
+            }
+
             var result = await client.ExecuteGetRequestAsync($"/api/0/auth/echo?msg=check&access_token={token}", cancellationToken);
             if (string.IsNullOrWhiteSpace(result))
             {
-                token = null;
                 Auth(cancellationToken);
                 return;
             }
             if (!string.Equals(result, Constants.WrongToken, StringComparison.OrdinalIgnoreCase))
                 return;
 
-            token = null;
             Auth(cancellationToken);
         }
 

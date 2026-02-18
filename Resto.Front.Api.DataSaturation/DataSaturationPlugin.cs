@@ -21,8 +21,8 @@ namespace Resto.Front.Api.DataSaturation
         private readonly IScreensService screensService;
         private readonly ILockService lockScreenService;
         private readonly IBarcodeScannerService barcodeScannerService;
-        private readonly IMindBoxService mindBoxService;
-        private readonly IMindBoxSettingsService mindBoxSettingsService;
+        //private readonly IMindBoxService mindBoxService;
+        //private readonly IMindBoxSettingsService mindBoxSettingsService;
         private readonly IIikoCardService iikoCardService;
 
         public DataSaturationPlugin()
@@ -36,8 +36,8 @@ namespace Resto.Front.Api.DataSaturation
             iikoCardService = new IikoCardService(Settings.Settings.Instance().IikoCard);
             settingsService = new SettingsService(ordersService, iikoCardService);
             barcodeScannerService = new BarcodeScannerService(iikoCardService);
-            mindBoxSettingsService = new MindBoxSettingsService();
-            mindBoxService = new MindBoxService(MindBoxSettings.Instance());
+            //mindBoxSettingsService = new MindBoxSettingsService();
+            //mindBoxService = new MindBoxService(MindBoxSettings.Instance());
         }
 
         public void Dispose()
@@ -49,8 +49,8 @@ namespace Resto.Front.Api.DataSaturation
             screensService.Dispose();
             lockScreenService.Dispose();
             ModifiersService.Instance.Dispose();
-            mindBoxSettingsService.Dispose();
-            mindBoxService.Dispose();
+            //mindBoxSettingsService.Dispose();
+            //mindBoxService.Dispose();
             iikoCardService.Dispose();
             barcodeScannerService.Dispose();
         }

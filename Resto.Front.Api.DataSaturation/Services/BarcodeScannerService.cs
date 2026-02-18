@@ -1,18 +1,15 @@
 ﻿using Resto.Front.Api.Data.Orders;
 using Resto.Front.Api.DataSaturation.Domain.Entities;
 using Resto.Front.Api.DataSaturation.Domain.Helpers;
-using Resto.Front.Api.DataSaturation.Helpers;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
-using Resto.Front.Api.DataSaturation.MindBox.Entities;
-using Resto.Front.Api.Extensions;
 using Resto.Front.Api.UI;
 using System;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 
 namespace Resto.Front.Api.DataSaturation.Services
 {
@@ -50,16 +47,17 @@ namespace Resto.Front.Api.DataSaturation.Services
                     {
                         client = await iikoCardService.GetCustomerAsync(payload.i, cancellationTokenSource.Token);
                     }, cancellationTokenSource.Token).GetAwaiter().GetResult(); ;
-                        if (client == null)
-                            return !matches;
+                    if (client == null)
+                        return !matches;
 
-                        var editSession = obj.os.CreateEditSession();
-                        editSession.RenameOrderGuest(obj.order.Guests[0].Id, client.name, obj.order);
-                        //editSession.AddOrderGuest(client.id, client.name, obj.order);
-                        //editSession.DeleteOrderGuest(obj.order, obj.order.Guests[0]);
-                        obj.os.SubmitChanges(editSession, obj.os.GetDefaultCredentials());
-                        PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.id} {client.surname} {client.name} to order {obj.order.Id} {obj.order.Number}");
-                    }
+                    var editSession = obj.os.CreateEditSession();
+                    var guest = obj.order.Guests.FirstOrDefault();
+                    if (guest != null)
+                        editSession.RenameOrderGuest(guest.Id, client.name, obj.order);
+                    editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerNumber, client.phone, true, obj.order);
+                    obj.os.SubmitChanges(editSession, obj.os.GetDefaultCredentials());
+                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.id} {client.surname} {client.name} to order {obj.order.Id} {obj.order.Number}");
+                }
                 catch (Exception ex)
                 {
                     PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i}. {ex}");
@@ -67,26 +65,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             }
             return matches;
         }
-/*
-        private async Task AddCustomerToOrder(IOrder order, IOperationService os, string customerId)
-        {
-            try
-            {
-                var client = await iikoCardService.GetCustomerAsync(customerId, cancellationTokenSource.Token); 
-                if (client == null) 
-                    return;
 
-                var editSession = PluginContext.Operations.CreateEditSession();
-                editSession.RenameOrderGuest(client.id, client.name, order);
-                PluginContext.Operations.SubmitChanges(editSession, PluginContext.Operations.GetDefaultCredentials());
-                PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.id} {client.surname} {client.name} to order {order.Id} {order.Number}");
-            }
-            catch (Exception ex)
-            {
-                PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {customerId}. {ex}");
-            }
-        }
-*/
         static string DeriveSecret(string master, string customerId)
         {
             byte[] keyBytes = Encoding.UTF8.GetBytes(master);
