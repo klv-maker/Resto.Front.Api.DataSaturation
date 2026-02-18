@@ -64,7 +64,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 PluginContext.Log.Error($"[{nameof(IikoCardService)}|{nameof(Auth)}] Can't get auth result");
             }
             else
-                token = result;
+                token = result.Trim('\"');
         }
 
         private async void ChangeTokenIfNeed(CancellationToken cancellationToken)
