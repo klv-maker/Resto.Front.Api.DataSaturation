@@ -59,6 +59,7 @@ namespace Resto.Front.Api.DataSaturation.Services
 
                 var editSession = os.CreateEditSession();
                 editSession.RenameOrderGuest(client.id, client.name, order);
+                os.SubmitChanges(editSession, os.GetDefaultCredentials());
                 PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.id} {client.surname} {client.name} to order {order.Id} {order.Number}");
             }
             catch (Exception ex)

@@ -46,6 +46,9 @@ namespace Resto.Front.Api.DataSaturation.Services
             password = iikoCard.Secret;
             organization = iikoCard.Organization;
             address = iikoCard.Address;
+            client?.CancelPendingRequests();
+            client?.Dispose();
+            client = null;
             CreateHttpClient();
         }
 
