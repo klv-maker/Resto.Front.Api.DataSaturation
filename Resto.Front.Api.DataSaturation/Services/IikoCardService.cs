@@ -52,7 +52,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             CreateHttpClient();
         }
 
-        private async void Auth(CancellationToken cancellationToken)
+        private async Task Auth(CancellationToken cancellationToken)
         {
             if (client is null)
                 return;
@@ -68,27 +68,27 @@ namespace Resto.Front.Api.DataSaturation.Services
                 token = result.Trim('\"');
         }
 
-        private async void ChangeTokenIfNeed(CancellationToken cancellationToken)
+        private async Task ChangeTokenIfNeed(CancellationToken cancellationToken)
         {
             if (client is null)
                 return;
 
             if (string.IsNullOrWhiteSpace(token))
             {
-                Auth(cancellationToken);
+                await Auth(cancellationToken);
                 return;
             }
 
             var result = await client.ExecuteGetRequestAsync($"/api/0/auth/echo?msg=check&access_token={token}", cancellationToken);
             if (string.IsNullOrWhiteSpace(result))
             {
-                Auth(cancellationToken);
+                await Auth(cancellationToken);
                 return;
             }
             if (!string.Equals(result, Constants.WrongToken, StringComparison.OrdinalIgnoreCase))
                 return;
 
-            Auth(cancellationToken);
+            await Auth(cancellationToken);
         }
 
         public async Task<OrganizationGuestInfo> GetCustomerAsync(string customerId, CancellationToken cancellationToken)
@@ -96,7 +96,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (client is null)
                 return null;
 
-            ChangeTokenIfNeed(cancellationToken);
+            await ChangeTokenIfNeed(cancellationToken);
             var result = await client.ExecuteGetRequestAsync($"/api/0/customers/get_customer_by_id?access_token={token}&organization={organization}&id={customerId}", cancellationToken);
             if (string.IsNullOrWhiteSpace(result))
             {
