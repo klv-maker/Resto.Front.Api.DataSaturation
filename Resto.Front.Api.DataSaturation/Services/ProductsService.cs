@@ -475,7 +475,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 isDisposed = true;
                 cancellationSource?.Cancel();
-                initUpdateProductsTask.Wait();
+                initUpdateProductsTask?.Wait();
             }
             catch (Exception ex)
             {

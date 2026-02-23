@@ -1,11 +1,9 @@
-﻿using Resto.Front.Api.Data.Brd;
-using Resto.Front.Api.DataSaturation.Domain.Entities;
+﻿using Resto.Front.Api.DataSaturation.Domain.Entities;
 using Resto.Front.Api.DataSaturation.Domain.Helpers;
 using Resto.Front.Api.DataSaturation.Domain.Models;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.DataSaturation.Settings;
 using System;
-using System.Drawing.Drawing2D;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -188,7 +186,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             return null;
         }
 
-        public async Task<CustomerData> AddCustomerToOrder(string customerNumber, Guid orderId, CancellationToken cancellationToken)
+        public async Task<CustomerAddData> AddCustomerToOrder(string customerNumber, Guid orderId, CancellationToken cancellationToken)
         {
             for (var i = 0; i < 5; i++)
             {
@@ -196,10 +194,10 @@ namespace Resto.Front.Api.DataSaturation.Services
                 {
                     if (localClient is null)
                         return null;
-                    if (string.IsNullOrWhiteSpace(token))
+                    if (string.IsNullOrWhiteSpace(tokenLocal))
                         await AuthLocalClient(cancellationToken);
 
-                    if (string.IsNullOrWhiteSpace(token))
+                    if (string.IsNullOrWhiteSpace(tokenLocal))
                         return null;
 
                     var request = new
@@ -214,7 +212,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                             orderId = orderId
                         }
                     };
-                    return await localClient.ExecutePostRequestAsync<CustomerData>($"/api/v2/authorize", request, cancellationToken);
+                    return await localClient.ExecutePostRequestAsync<CustomerAddData>($"/api/v2/authorize", request, cancellationToken);
                 }
                 catch (TokenExpiredException ex)
                 {

@@ -122,13 +122,15 @@ namespace Resto.Front.Api.DataSaturation.Services
                 editSession.RenameOrderGuest(guest.Id, customerData.name, order);
             editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerNumber, customerData.phone, true, order);
             os.SubmitChanges(editSession, os.GetDefaultCredentials());
-            PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {customerId} {customerData.lastName} {customerData.name} to order {order.Id} {order.Number}");
+            PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(AddCustomerToOrder)}] Add client {customerId} {customerData.lastName} {customerData.name} to order {order.Id} {order.Number}");
 
-            CustomerData customerDataNew = null;
+            CustomerAddData customerDataNew = null;
             Task.Run(async () => 
             {
                 customerDataNew = await iikoCardService.AddCustomerToOrder(customerData.phone, order.Id, cancellationTokenSource.Token); 
             }, cancellationTokenSource.Token).GetAwaiter().GetResult();
+            if (customerDataNew is null)
+                PluginContext.Log.Error($"[{nameof(BarcodeScannerService)}|{nameof(AddCustomerToOrder)}] Something wrong");
         }
 
         static string DeriveSecret(string master, string customerId)

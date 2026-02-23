@@ -25,4 +25,24 @@ namespace Resto.Front.Api.DataSaturation.Domain.Models
         public DateTime? birthday { get; set; } = null;
         public Sex sex { get; set; }
     }
+
+
+    public class CustomerAddData
+    {
+        public object cardNumber { get; set; }
+        public object cardTrack { get; set; }
+        public CustomerAddDataInfo userData { get; set; }
+    }
+
+    public class CustomerAddDataInfo
+    {
+        public object birthday { get; set; }
+        public string fullName { get; set; }
+        public string lastName { get; set; }
+        public string name { get; set; }
+        public string phone { get; set; }
+        public Guid? referrer { get; set; }
+        public Sex sex { get; set; }
+    }
+
 }

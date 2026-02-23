@@ -12,6 +12,6 @@ namespace Resto.Front.Api.DataSaturation.Interfaces.Services
         void UpdateSettings(IikoCard iikoCard);
         Task<OrganizationGuestInfo> GetIikoCardCustomerAsync(string customerId, CancellationToken cancellationToken);
         Task<CustomerInfo> GetCustomerAsync(string customerNumber, CancellationToken cancellationToken);
-        Task<CustomerData> AddCustomerToOrder(string customerNumber, Guid orderId, CancellationToken cancellationToken);
+        Task<CustomerAddData> AddCustomerToOrder(string customerNumber, Guid orderId, CancellationToken cancellationToken);
     }
 }
