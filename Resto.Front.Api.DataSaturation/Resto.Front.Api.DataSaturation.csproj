@@ -31,16 +31,6 @@
         <Reference Include="System.Xml" />
   </ItemGroup>
     <ItemGroup>
-      <Compile Update="Resources\Resources.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Resources\Resources.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.resx</DependentUpon>
-      </Compile>
       <Compile Update="Resources\Resourceы.Designer.cs">
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
@@ -48,14 +38,6 @@
       </Compile>
     </ItemGroup>
     <ItemGroup>
-      <EmbeddedResource Update="Resources\Resources.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <LastGenOutput>Resource.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Resources\Resources.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
       <EmbeddedResource Update="Resources\Resourceы.resx">
         <Generator>ResXFileCodeGenerator</Generator>
         <LastGenOutput>Resourceы.Designer.cs</LastGenOutput>

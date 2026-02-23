@@ -177,6 +177,10 @@ namespace Resto.Front.Api.DataSaturation.Settings
 
         private Guid organizationField;
 
+        private string userLocalField;
+
+        private string secretLocalField;
+
         /// <remarks/>
         public string Address
         {
@@ -225,6 +229,30 @@ namespace Resto.Front.Api.DataSaturation.Settings
             set
             {
                 this.organizationField = value;
+            }
+        }
+
+        public string UserLocal
+        {
+            get
+            {
+                return this.userLocalField;
+            }
+            set
+            {
+                this.userLocalField = value;
+            }
+        }
+
+        public string SecretLocal
+        {
+            get
+            {
+                return this.secretLocalField;
+            }
+            set
+            {
+                this.secretLocalField = value;
             }
         }
     }

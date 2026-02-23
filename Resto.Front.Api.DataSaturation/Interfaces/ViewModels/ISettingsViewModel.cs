@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace Resto.Front.Api.DataSaturation.Interfaces.ViewModels
 {
-    public interface ISettingsViewModel : IViewModel
+    public interface ISettingsViewModel : IClosebaleViewModel
     {
         ObservableCollection<IAddressViewModel> AddressViewModels { get; }
         int SwitchMediaTime { get; set; }

@@ -16,7 +16,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Views
         [DllImport("user32.dll", SetLastError = true)]
         private static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 
-        private void EntryPoint<T>(IViewModel viewModel) where T : Window, new()
+        private void EntryPoint<T>(IClosebaleViewModel viewModel) where T : Window, new()
         {
             try
             {
@@ -64,7 +64,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Views
 
             window.Dispatcher.Invoke(() =>
             {
-                if (window.DataContext is IViewModel viewModel)
+                if (window.DataContext is IClosebaleViewModel viewModel)
                     viewModel.CloseAction = null;
 
                 window.Loaded -= OnLoaded;
@@ -74,7 +74,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Views
             window.Dispatcher.Thread.Join();
         }
 
-        public void ShowDialog<T>(IViewModel viewModel) where T : Window, new()
+        public void ShowDialog<T>(IClosebaleViewModel viewModel) where T : Window, new()
         {
             var windowThread = new Thread(() => EntryPoint<T>(viewModel));
             windowThread.SetApartmentState(ApartmentState.STA);

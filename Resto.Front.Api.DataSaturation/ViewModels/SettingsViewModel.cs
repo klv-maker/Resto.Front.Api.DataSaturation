@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using Resto.Front.Api.DataSaturation.Domain.ViewModels;
 using Resto.Front.Api.DataSaturation.Interfaces;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
@@ -6,13 +7,11 @@ using Resto.Front.Api.DataSaturation.Settings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 namespace Resto.Front.Api.DataSaturation.ViewModels
 {
-    public class SettingsViewModel : ISettingsViewModel
+    public class SettingsViewModel : BaseViewModel, ISettingsViewModel
     {
         private ObservableCollection<IAddressViewModel> addressViewModels = new ObservableCollection<IAddressViewModel>();
         public ObservableCollection<IAddressViewModel> AddressViewModels
@@ -130,12 +129,6 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
                 selectedAddress = value;
                 OnPropertyChanged(nameof(SelectedAddress));
             }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName] string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 
         private IOrdersService orderService;

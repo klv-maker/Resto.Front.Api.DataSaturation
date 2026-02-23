@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="Resto.Front.Api.DataSaturation.Views.CustomerDetailsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <ResourceDictionary Source="IIKOStyles.xaml"/>
+    </UserControl.Resources>
+
+    <Border Background="{DynamicResource MainBgBrush}" Width="450">
+        <StackPanel Margin="30">
+            <TextBlock Text="ИНФОРМАЦИЯ О ГОСТЕ"
+                       Foreground="White" FontSize="22"
+                       FontWeight="Bold"
+                       Margin="0,0,0,30"/>
+
+            <TextBlock Text="Номер телефона"
+                       Foreground="#888"
+                       FontSize="12"
+                       Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding PhoneNumber, FallbackValue='79100000902'}"
+                       Foreground="White"
+                       FontSize="20"
+                       Margin="0,0,0,20"/>
+
+            <TextBlock Text="Имя"
+                       Foreground="#888"
+                       FontSize="12"
+                       Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding GuestName, FallbackValue='Павел Сергеевич'}"
+                       Foreground="White"
+                       FontSize="20"
+                       Margin="0,0,0,20"/>
+
+            <TextBlock Text="Текущий баланс" Foreground="#888" FontSize="12" Margin="0,0,0,5"/>
+            <TextBlock Text="{Binding Balance, FallbackValue='24'}" Foreground="White" FontSize="20" Margin="0,0,0,25"/>
+
+            <TextBlock Text="Промокод" Foreground="#888" FontSize="12" Margin="0,15,0,8"/>
+            <!--<Grid Height="50">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Style="{DynamicResource PromoTextBoxStyle}" 
+                         Text="{Binding PromoCode, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Grid.Column="1" Content="Применить" 
+                        Background="{DynamicResource IikoBlueBrush}" 
+                        Foreground="White" Width="130" Margin="10,0,0,0" BorderThickness="0"/>
+            </Grid>-->
+        </StackPanel>
+    </Border>
+</UserControl>

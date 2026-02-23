@@ -2,7 +2,7 @@
 
 namespace Resto.Front.Api.DataSaturation.MindBox.Interfaces.VIewModels
 {
-    public interface IMindBoxSettingsViewModel : IViewModel
+    public interface IMindBoxSettingsViewModel : IClosebaleViewModel
     {
         string AddressApi { get; set; }
         string Key { get; set; }

@@ -12,7 +12,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Entities
         public string name { get; set; }
         public string phone { get; set; }
         public string cultureName { get; set; }
-        public DateTime birthday { get; set; }
+        public DateTime? birthday { get; set; }
         public string email { get; set; }
         public string surname { get; set; }
         public Sex sex { get; set; }
@@ -21,7 +21,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Entities
         public List<GuestCategoryInfo> categories { get; set; } = new List<GuestCategoryInfo>();
         public List<UserWalletInfo> walletBalances { get; set; } = new List<UserWalletInfo>();
         public string middleName { get; set; }
-        public Guid referrerId { get; set; }
+        public Guid? referrerId { get; set; }
         public string userData { get; set; }
     }
 
@@ -43,14 +43,15 @@ namespace Resto.Front.Api.DataSaturation.Domain.Entities
     {
         Money,
         Bonus,
-        Product
+        Product,
     }
 
     public enum WalletTypes 
     {
         Bonus,
         IikoCard,
-        IikoCardInteger
+        IikoCardInteger,
+        Real
     }
 
     public class GuestCategoryInfo

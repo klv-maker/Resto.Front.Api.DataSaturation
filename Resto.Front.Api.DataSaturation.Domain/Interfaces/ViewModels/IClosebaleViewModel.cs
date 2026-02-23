@@ -1,9 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
 
 namespace Resto.Front.Api.DataSaturation.Domain.Interfaces.ViewModels
 {
-    public interface IViewModel : INotifyPropertyChanged
+    public interface IClosebaleViewModel : IViewModel
     {
+        Action CloseAction { get; set; }
     }
 }

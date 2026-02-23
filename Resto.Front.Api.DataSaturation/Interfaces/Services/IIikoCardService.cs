@@ -1,4 +1,5 @@
 ﻿using Resto.Front.Api.DataSaturation.Domain.Entities;
+using Resto.Front.Api.DataSaturation.Domain.Models;
 using Resto.Front.Api.DataSaturation.Settings;
 using System;
 using System.Threading;
@@ -9,6 +10,8 @@ namespace Resto.Front.Api.DataSaturation.Interfaces.Services
     public interface IIikoCardService : IDisposable
     {
         void UpdateSettings(IikoCard iikoCard);
-        Task<OrganizationGuestInfo> GetCustomerAsync(string customerId, CancellationToken cancellationToken);
+        Task<OrganizationGuestInfo> GetIikoCardCustomerAsync(string customerId, CancellationToken cancellationToken);
+        Task<CustomerInfo> GetCustomerAsync(string customerNumber, CancellationToken cancellationToken);
+        Task<CustomerData> AddCustomerToOrder(string customerNumber, Guid orderId, CancellationToken cancellationToken);
     }
 }

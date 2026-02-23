@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
+using Resto.Front.Api.DataSaturation.Domain.Models;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -51,8 +53,12 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
                     var jsonContent = CreateJsonContent(requestData);
                     var response = await client.PostAsync(endpoint, jsonContent, cancellationToken);
                     response.EnsureSuccessStatusCode();
-
-                    return await response.Content.ReadAsStringAsync();
+                    var result = await response.Content.ReadAsStringAsync();
+                    if (result.Contains(Constants.WrongToken))
+                    {
+                        throw SerializeHelper.DeserializeFromJson<TokenExpiredException>(result);
+                    }
+                    return result;
                 },
                 cancellationToken);
         }
@@ -71,6 +77,10 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
 
                     PluginContext.Log.Info($"Successfully completed request to {endpoint}, attempt {attempt + 1}");
                     return result;
+                }
+                catch (TokenExpiredException)
+                {
+                    throw;
                 }
                 catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
                 {

@@ -1,7 +1,13 @@
-﻿using Resto.Front.Api.Data.Orders;
+﻿using Resto.Front.Api.Data.Brd;
+using Resto.Front.Api.Data.Orders;
 using Resto.Front.Api.DataSaturation.Domain.Entities;
 using Resto.Front.Api.DataSaturation.Domain.Helpers;
+using Resto.Front.Api.DataSaturation.Domain.Models;
+using Resto.Front.Api.DataSaturation.Domain.Views;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
+using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
+using Resto.Front.Api.DataSaturation.ViewModels;
+using Resto.Front.Api.DataSaturation.Views;
 using Resto.Front.Api.UI;
 using System;
 using System.Linq;
@@ -19,51 +25,110 @@ namespace Resto.Front.Api.DataSaturation.Services
         private bool isDisposed = false;
         private readonly IIikoCardService iikoCardService;
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private const string masterSecret = "sk_KmDZI7u2GwaftSOfM0zR";
+        private readonly BarcodeConfig config;
+        private WindowOwner windowOwner;
+        private ICustomerViewModel customerViewModel;
+
         public BarcodeScannerService(IIikoCardService iikoCardService) 
         {
             this.iikoCardService = iikoCardService;
+            config = new BarcodeConfig { digits = 6, period = 30, window = 1 };
             subscriptions.Add(PluginContext.Notifications.OrderEditBarcodeScanned.Subscribe(BarcodeScanned));
         }
 
         private bool BarcodeScanned((string barcode, IOrder order, IOperationService os, IViewManager vm) obj)
         {
-            var payload = obj.barcode.DeserializeFromJson<BarcodeScanInfo>();
-            string masterSecret = "sk_KmDZI7u2GwaftSOfM0zR";
-            var config = new { digits = 6, period = 30, window = 1 };
-
-            string derivedSecretKey = DeriveSecret(masterSecret, payload.i);
-            string computedTotp = GenerateTotp(derivedSecretKey, payload.t * 1000, config.digits, config.period);
-            bool matches = computedTotp == payload.o;
-
-            PluginContext.Log.Info("derivedSecretKey: " + derivedSecretKey);
-            PluginContext.Log.Info("TOTP(из расчёта): " + computedTotp);
-            PluginContext.Log.Info("Совпадает с payload.totp: " + matches);
-            if (matches)
+            try
             {
-                try
-                {
-                    OrganizationGuestInfo client = null;
-                    Task.Run(async () =>
-                    {
-                        client = await iikoCardService.GetCustomerAsync(payload.i, cancellationTokenSource.Token);
-                    }, cancellationTokenSource.Token).GetAwaiter().GetResult(); ;
-                    if (client == null)
-                        return !matches;
+                if (string.IsNullOrWhiteSpace(obj.barcode))
+                    return false;
+                var barcode = obj.barcode;
+                if (barcode.FirstOrDefault() == '"')
+                    barcode = barcode.Remove(0, 1);
 
-                    var editSession = obj.os.CreateEditSession();
-                    var guest = obj.order.Guests.FirstOrDefault();
-                    if (guest != null)
-                        editSession.RenameOrderGuest(guest.Id, client.name, obj.order);
-                    editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerNumber, client.phone, true, obj.order);
-                    obj.os.SubmitChanges(editSession, obj.os.GetDefaultCredentials());
-                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {client.id} {client.surname} {client.name} to order {obj.order.Id} {obj.order.Number}");
-                }
-                catch (Exception ex)
+                if (obj.barcode.LastOrDefault() == '"')
+                    barcode = barcode.Remove(barcode.Length - 1, 1);
+
+                var payload = barcode.DeserializeFromJson<BarcodeScanInfo>();
+
+                string derivedSecretKey = DeriveSecret(masterSecret, payload.i);
+                string computedTotp = GenerateTotp(derivedSecretKey, payload.t * 1000, config.digits, config.period);
+                bool matches = computedTotp == payload.o;
+
+                PluginContext.Log.Info("derivedSecretKey: " + derivedSecretKey);
+                PluginContext.Log.Info("TOTP(из расчёта): " + computedTotp);
+                PluginContext.Log.Info("Совпадает с payload.totp: " + matches);
+                if (matches)
                 {
-                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i}. {ex}");
+                    try
+                    {
+                        OrganizationGuestInfo client = null;
+                        Task.Run(async () =>
+                        {
+                            client = await iikoCardService.GetIikoCardCustomerAsync(payload.i, cancellationTokenSource.Token);
+                        }, cancellationTokenSource.Token).GetAwaiter().GetResult();
+
+                        if (client == null)
+                            return false;
+
+                        //TODO: знаю, что какая-то шляпа, но у нас пока нет метода для получения нормального покупателя
+                        CustomerInfo customerInfo = null;
+                        Task.Run(async () =>
+                        {
+                            customerInfo = await iikoCardService.GetCustomerAsync(client.phone, cancellationTokenSource.Token);
+                        }, cancellationTokenSource.Token).GetAwaiter().GetResult();
+                        if (customerInfo is null)
+                            return false;
+
+                        ShowCustomer(customerInfo);
+                        AddCustomerToOrder(obj.order, obj.os, customerInfo.userData, client.id);
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i}. {ex}");
+                    }
                 }
+                return matches;
             }
-            return matches;
+            catch (Exception ex)
+            {
+                PluginContext.Log.Error($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error barcode {ex}");
+                return false;
+            }
+        }
+
+        private void ShowCustomer(CustomerInfo customerInfo)
+        {
+            if (isDisposed)
+                return;
+
+            //явно вызываем очистку
+            if (windowOwner != null)
+            {
+                windowOwner.Dispose();
+                windowOwner = null;
+            }
+            windowOwner = new WindowOwner();
+            customerViewModel = new CustomerViewModel(customerInfo);
+            windowOwner.ShowDialog<CustomerWindow>(customerViewModel);
+        }
+
+        private void AddCustomerToOrder(IOrder order, IOperationService os, CustomerData customerData, Guid customerId)
+        {
+            var editSession = os.CreateEditSession();
+            var guest = order.Guests.FirstOrDefault();
+            if (guest != null)
+                editSession.RenameOrderGuest(guest.Id, customerData.name, order);
+            editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerNumber, customerData.phone, true, order);
+            os.SubmitChanges(editSession, os.GetDefaultCredentials());
+            PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Add client {customerId} {customerData.lastName} {customerData.name} to order {order.Id} {order.Number}");
+
+            CustomerData customerDataNew = null;
+            Task.Run(async () => 
+            {
+                customerDataNew = await iikoCardService.AddCustomerToOrder(customerData.phone, order.Id, cancellationTokenSource.Token); 
+            }, cancellationTokenSource.Token).GetAwaiter().GetResult();
         }
 
         static string DeriveSecret(string master, string customerId)
@@ -124,6 +189,10 @@ namespace Resto.Front.Api.DataSaturation.Services
             cancellationTokenSource?.Cancel();
             cancellationTokenSource?.Dispose();
             subscriptions?.Dispose();
+
+            if (customerViewModel?.CloseAction != null)
+                customerViewModel.CloseAction();
+            windowOwner?.Dispose();
         }
     }
 }
