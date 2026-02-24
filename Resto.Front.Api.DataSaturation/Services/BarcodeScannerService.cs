@@ -70,7 +70,11 @@ namespace Resto.Front.Api.DataSaturation.Services
                         }, cancellationTokenSource.Token).GetAwaiter().GetResult();
 
                         if (client == null)
-                            return false;
+                        {
+                            obj.vm.ShowErrorPopup($"Не найден покупатель по ID {payload.i}");
+                            return false; 
+                        }
+                            
 
                         //TODO: знаю, что какая-то шляпа, но у нас пока нет метода для получения нормального покупателя
                         CustomerInfo customerInfo = null;
@@ -79,7 +83,10 @@ namespace Resto.Front.Api.DataSaturation.Services
                             customerInfo = await iikoCardService.GetCustomerAsync(client.phone, cancellationTokenSource.Token);
                         }, cancellationTokenSource.Token).GetAwaiter().GetResult();
                         if (customerInfo is null)
+                        {
+                            obj.vm.ShowErrorPopup($"Не найден покупатель по номеру телефона {client.phone}");
                             return false;
+                        }
 
                         ShowCustomer(customerInfo);
                         AddCustomerToOrder(obj.order, obj.os, customerInfo.userData, client.id);
@@ -89,6 +96,8 @@ namespace Resto.Front.Api.DataSaturation.Services
                         PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i}. {ex}");
                     }
                 }
+                else 
+                    obj.vm.ShowErrorPopup("QR-код устарел");
                 return matches;
             }
             catch (Exception ex)
