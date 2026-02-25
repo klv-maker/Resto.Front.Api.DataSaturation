@@ -7,5 +7,6 @@
         public const string AppProcessName = "iikoFront.Net";
         public const string WrongToken = "Wrong access token";
         public const string ExternalDataKeyCustomerNumber = "CustomerNumber";
+        public const string ExternalDataKeyCustomerBalance = "CustomerBalance";
     }
 }
