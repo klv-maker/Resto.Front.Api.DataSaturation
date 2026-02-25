@@ -52,8 +52,6 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             }
         }
 
-        private CustomerInfo customerInfo;
-
         public CustomerViewModel(CustomerInfo customerInfo) 
         {
             Update(customerInfo);            
@@ -61,7 +59,6 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
 
         private void Update(CustomerInfo customer)
         {
-            customerInfo = customer;
             CustomerDetailsViewModel = new CustomerDetailsViewModel(customer);
         }
 

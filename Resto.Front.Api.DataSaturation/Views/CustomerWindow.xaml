@@ -23,7 +23,7 @@
         </Grid.RowDefinitions>
 
         <Border Background="#252525" Padding="25,12">
-            <TextBlock Text="{Binding StoreAddress, FallbackValue='Хользунова, 6 СТ МСК'}" Foreground="#999"/>
+            <TextBlock Text="{Binding StoreAddress}" Foreground="#999"/>
         </Border>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal">
@@ -36,7 +36,7 @@
             <Button Style="{DynamicResource IikoBottomButtonStyle}"
                     Content="&lt; НАЗАД"                    
                     Command="{Binding ReturnCommand}"/>
-            <Button Style="{DynamicResource IikoBottomButtonStyle}" Content="ИНФОРМАЦИЯ О ГОСТЕ" 
+            <Button Style="{DynamicResource IikoBottomButtonStyle}" Content="О ГОСТЕ" 
                     Background="{DynamicResource ActiveTabBrush}" Foreground="Black" FontWeight="Bold"/>
             <!--<Button Style="{DynamicResource IikoBottomButtonStyle}" Content="ИСТОРИЯ"/>
             <Button Style="{DynamicResource IikoBottomButtonStyle}" Content="БОНУСЫ"/>

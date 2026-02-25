@@ -34,6 +34,16 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
                 {
                     var jsonContent = CreateJsonContent(requestData);
                     var response = await client.PostAsync(endpoint, jsonContent, cancellationToken);
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        var jsonResponseUnauthorized = await response.Content.ReadAsStringAsync();
+                        if (jsonResponseUnauthorized.Contains(Constants.WrongToken))
+                            throw SerializeHelper.DeserializeFromJson<TokenExpiredException>(jsonResponseUnauthorized);
+
+                        throw new Exception(jsonResponseUnauthorized);
+                    }
+
                     response.EnsureSuccessStatusCode();
 
                     var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -52,16 +62,23 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
                 {
                     var jsonContent = CreateJsonContent(requestData);
                     var response = await client.PostAsync(endpoint, jsonContent, cancellationToken);
+
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        var jsonResponseUnauthorized = await response.Content.ReadAsStringAsync();
+                        if (jsonResponseUnauthorized.Contains(Constants.WrongToken))
+                            throw SerializeHelper.DeserializeFromJson<TokenExpiredException>(jsonResponseUnauthorized);
+
+                        throw new Exception(jsonResponseUnauthorized);
+                    }
+
                     response.EnsureSuccessStatusCode();
                     var result = await response.Content.ReadAsStringAsync();
-                    if (result.Contains(Constants.WrongToken))
-                    {
-                        throw SerializeHelper.DeserializeFromJson<TokenExpiredException>(result);
-                    }
                     return result;
                 },
                 cancellationToken);
         }
+
 
         private static async Task<T> ExecuteWithRetryAsync<T>(string endpoint, Func<Task<T>> action, CancellationToken cancellationToken)
         {

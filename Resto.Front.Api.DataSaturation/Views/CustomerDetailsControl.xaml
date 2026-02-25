@@ -17,7 +17,7 @@
                        Foreground="#888"
                        FontSize="12"
                        Margin="0,0,0,5"/>
-            <TextBlock Text="{Binding PhoneNumber, FallbackValue='79100000902'}"
+            <TextBlock Text="{Binding PhoneNumber}"
                        Foreground="White"
                        FontSize="20"
                        Margin="0,0,0,20"/>
@@ -26,15 +26,15 @@
                        Foreground="#888"
                        FontSize="12"
                        Margin="0,0,0,5"/>
-            <TextBlock Text="{Binding GuestName, FallbackValue='Павел Сергеевич'}"
+            <TextBlock Text="{Binding GuestName}"
                        Foreground="White"
                        FontSize="20"
                        Margin="0,0,0,20"/>
 
             <TextBlock Text="Текущий баланс" Foreground="#888" FontSize="12" Margin="0,0,0,5"/>
-            <TextBlock Text="{Binding Balance, FallbackValue='24'}" Foreground="White" FontSize="20" Margin="0,0,0,25"/>
+            <TextBlock Text="{Binding Balance}" Foreground="White" FontSize="20" Margin="0,0,0,25"/>
 
-            <TextBlock Text="Промокод" Foreground="#888" FontSize="12" Margin="0,15,0,8"/>
+            <!--<TextBlock Text="Промокод" Foreground="#888" FontSize="12" Margin="0,15,0,8"/>-->
             <!--<Grid Height="50">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
