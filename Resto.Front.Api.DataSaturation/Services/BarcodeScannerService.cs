@@ -49,6 +49,8 @@ namespace Resto.Front.Api.DataSaturation.Services
 
                 if (obj.barcode.LastOrDefault() == '"')
                     barcode = barcode.Remove(barcode.Length - 1, 1);
+                if(obj.barcode.Contains("\\\""))
+                    barcode = barcode.Replace("\\\"", "\"");
 
                 var payload = barcode.DeserializeFromJson<BarcodeScanInfo>();
 
@@ -70,7 +72,11 @@ namespace Resto.Front.Api.DataSaturation.Services
                         }, cancellationTokenSource.Token).GetAwaiter().GetResult();
 
                         if (client == null)
-                            return false;
+                        {
+                            obj.vm.ShowErrorPopup($"Не найден покупатель по ID {payload.i}");
+                            return false; 
+                        }
+                            
 
                         //TODO: знаю, что какая-то шляпа, но у нас пока нет метода для получения нормального покупателя
                         CustomerInfo customerInfo = null;
@@ -79,16 +85,21 @@ namespace Resto.Front.Api.DataSaturation.Services
                             customerInfo = await iikoCardService.GetCustomerAsync(client.phone, cancellationTokenSource.Token);
                         }, cancellationTokenSource.Token).GetAwaiter().GetResult();
                         if (customerInfo is null)
+                        {
+                            obj.vm.ShowErrorPopup($"Не найден покупатель по номеру телефона {client.phone}");
                             return false;
+                        }
 
                         ShowCustomer(customerInfo);
-                        AddCustomerToOrder(obj.order, obj.os, customerInfo.userData, client.id);
+                        AddCustomerToOrder(obj.order, obj.os, customerInfo, client.id);
                     }
                     catch (Exception ex)
                     {
                         PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i}. {ex}");
                     }
                 }
+                else 
+                    obj.vm.ShowErrorPopup("QR-код устарел");
                 return matches;
             }
             catch (Exception ex)
@@ -114,20 +125,21 @@ namespace Resto.Front.Api.DataSaturation.Services
             windowOwner.ShowDialog<CustomerWindow>(customerViewModel);
         }
 
-        private void AddCustomerToOrder(IOrder order, IOperationService os, CustomerData customerData, Guid customerId)
+        private void AddCustomerToOrder(IOrder order, IOperationService os, CustomerInfo customerData, Guid customerId)
         {
             var editSession = os.CreateEditSession();
             var guest = order.Guests.FirstOrDefault();
             if (guest != null)
-                editSession.RenameOrderGuest(guest.Id, customerData.name, order);
-            editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerNumber, customerData.phone, true, order);
+                editSession.RenameOrderGuest(guest.Id, customerData.userData.name, order);
+            editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerNumber, customerData.userData.phone, true, order);
+            editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerBalance, customerData.userWallets.FirstOrDefault().balance.ToString("F2"), true, order);
             os.SubmitChanges(editSession, os.GetDefaultCredentials());
-            PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(AddCustomerToOrder)}] Add client {customerId} {customerData.lastName} {customerData.name} to order {order.Id} {order.Number}");
+            PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(AddCustomerToOrder)}] Add client {customerId} {customerData.userData.lastName} {customerData.userData.name} to order {order.Id} {order.Number}");
 
             CustomerAddData customerDataNew = null;
             Task.Run(async () => 
             {
-                customerDataNew = await iikoCardService.AddCustomerToOrder(customerData.phone, order.Id, cancellationTokenSource.Token); 
+                customerDataNew = await iikoCardService.AddCustomerToOrder(customerData.userData.phone, order.Id, cancellationTokenSource.Token); 
             }, cancellationTokenSource.Token).GetAwaiter().GetResult();
             if (customerDataNew is null)
                 PluginContext.Log.Error($"[{nameof(BarcodeScannerService)}|{nameof(AddCustomerToOrder)}] Something wrong");

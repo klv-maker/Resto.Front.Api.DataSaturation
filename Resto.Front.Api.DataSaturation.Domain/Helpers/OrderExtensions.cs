@@ -60,6 +60,8 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
             return new OrderInfo
             {
                 id = order.Id,
+                ClientName = order.Guests.FirstOrDefault()?.Name,
+                ClientBalance = PluginContext.Operations.TryGetOrderExternalDataByKey(order, Constants.ExternalDataKeyCustomerBalance),
                 orderNumber = order.Number,
                 orderStatus = orderStatus,
                 items = productInfos.Values.OrderBy(item => item.printTime).ToList(),

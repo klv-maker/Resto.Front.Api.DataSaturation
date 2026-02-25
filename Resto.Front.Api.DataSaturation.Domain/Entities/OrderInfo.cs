@@ -8,6 +8,8 @@ namespace Resto.Front.Api.DataSaturation.Domain.Entities
     public class OrderInfo : IEqualsObject
     {
         public Guid id { get; set; }
+        public string ClientName { get; set; }
+        public string ClientBalance { get; set; }
         public int orderNumber { get; set; }
         public OrderStatusInfo orderStatus { get; set; }
         public List<OrderItemInfo> items { get; set; }
