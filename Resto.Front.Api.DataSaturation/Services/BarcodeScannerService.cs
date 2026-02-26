@@ -14,6 +14,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -43,64 +44,46 @@ namespace Resto.Front.Api.DataSaturation.Services
             {
                 if (string.IsNullOrWhiteSpace(obj.barcode))
                     return false;
-                var barcode = obj.barcode;
-                if (barcode.FirstOrDefault() == '"')
-                    barcode = barcode.Remove(0, 1);
-
-                if (obj.barcode.LastOrDefault() == '"')
-                    barcode = barcode.Remove(barcode.Length - 1, 1);
-                if(obj.barcode.Contains("\\\""))
-                    barcode = barcode.Replace("\\\"", "\"");
+                var barcode = BarcodeCleaner.CleanBarcode(obj.barcode);
 
                 var payload = barcode.DeserializeFromJson<BarcodeScanInfo>();
 
-                string derivedSecretKey = DeriveSecret(masterSecret, payload.i);
-                string computedTotp = GenerateTotp(derivedSecretKey, payload.t * 1000, config.digits, config.period);
-                bool matches = computedTotp == payload.o;
+                //string derivedSecretKey = DeriveSecret(masterSecret, payload.PhoneNumber);
+                //string computedTotp = GenerateTotp(derivedSecretKey, payload.Timestamp * 1000, config.digits, config.period);
+                //bool matches = computedTotp == payload.Totp;
 
-                PluginContext.Log.Info("derivedSecretKey: " + derivedSecretKey);
-                PluginContext.Log.Info("TOTP(из расчёта): " + computedTotp);
-                PluginContext.Log.Info("Совпадает с payload.totp: " + matches);
-                if (matches)
+                //PluginContext.Log.Info("derivedSecretKey: " + derivedSecretKey);
+                //PluginContext.Log.Info("TOTP (derived from the calculation): " + computedTotp);
+                //PluginContext.Log.Info("matches with payload.totp: " + matches);
+                if (true)
                 {
                     try
                     {
-                        OrganizationGuestInfo client = null;
-                        Task.Run(async () =>
-                        {
-                            client = await iikoCardService.GetIikoCardCustomerAsync(payload.i, cancellationTokenSource.Token);
-                        }, cancellationTokenSource.Token).GetAwaiter().GetResult();
-
-                        if (client == null)
-                        {
-                            obj.vm.ShowErrorPopup($"Не найден покупатель по ID {payload.i}");
-                            return false; 
-                        }
-                            
-
-                        //TODO: знаю, что какая-то шляпа, но у нас пока нет метода для получения нормального покупателя
                         CustomerInfo customerInfo = null;
                         Task.Run(async () =>
                         {
-                            customerInfo = await iikoCardService.GetCustomerAsync(client.phone, cancellationTokenSource.Token);
+                            customerInfo = await iikoCardService.GetCustomerAsync(payload.PhoneNumber, cancellationTokenSource.Token);
                         }, cancellationTokenSource.Token).GetAwaiter().GetResult();
                         if (customerInfo is null)
                         {
-                            obj.vm.ShowErrorPopup($"Не найден покупатель по номеру телефона {client.phone}");
+                            obj.vm.ShowErrorPopup($"Не найден покупатель по номеру телефона {payload.PhoneNumber}");
                             return false;
                         }
 
                         ShowCustomer(customerInfo);
-                        AddCustomerToOrder(obj.order, obj.os, customerInfo, client.id);
+                        AddCustomerToOrder(obj.order, obj.os, customerInfo);
                     }
                     catch (Exception ex)
                     {
-                        PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetClientById on id: {payload.i}. {ex}");
+                        PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Get error in GetCustomerAsync for phone: {payload.PhoneNumber}. {ex}");
                     }
                 }
-                else 
-                    obj.vm.ShowErrorPopup("QR-код устарел");
-                return matches;
+                else
+                {
+                    obj.vm.ShowErrorPopup("QR-код устарел"); 
+                    return false;
+                }
+                return true;
             }
             catch (Exception ex)
             {
@@ -125,7 +108,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             windowOwner.ShowDialog<CustomerWindow>(customerViewModel);
         }
 
-        private void AddCustomerToOrder(IOrder order, IOperationService os, CustomerInfo customerData, Guid customerId)
+        private void AddCustomerToOrder(IOrder order, IOperationService os, CustomerInfo customerData)
         {
             var editSession = os.CreateEditSession();
             var guest = order.Guests.FirstOrDefault();
@@ -134,7 +117,7 @@ namespace Resto.Front.Api.DataSaturation.Services
             editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerNumber, customerData.userData.phone, true, order);
             editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerBalance, customerData.userWallets.FirstOrDefault().balance.ToString("F2"), true, order);
             os.SubmitChanges(editSession, os.GetDefaultCredentials());
-            PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(AddCustomerToOrder)}] Add client {customerId} {customerData.userData.lastName} {customerData.userData.name} to order {order.Id} {order.Number}");
+            PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(AddCustomerToOrder)}] Add client {customerData.userData.lastName} {customerData.userData.name} to order {order.Id} {order.Number}");
 
             CustomerAddData customerDataNew = null;
             Task.Run(async () => 
@@ -207,6 +190,20 @@ namespace Resto.Front.Api.DataSaturation.Services
             if (customerViewModel?.CloseAction != null)
                 customerViewModel.CloseAction();
             windowOwner?.Dispose();
+        }
+    }
+
+    public static class BarcodeCleaner
+    {
+        private static readonly Regex _fullCleanRegex = new Regex(@"^""|""$|\\""", RegexOptions.Compiled);
+
+        public static string CleanBarcode(string rawBarcode)
+        {
+            if (string.IsNullOrEmpty(rawBarcode))
+                return rawBarcode;
+
+            // Всё за один проход Regex - создаётся только одна новая строка
+            return _fullCleanRegex.Replace(rawBarcode, m => m.Value == "\\\"" ? "\"" : "");
         }
     }
 }

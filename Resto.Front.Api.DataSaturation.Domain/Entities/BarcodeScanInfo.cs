@@ -1,9 +1,14 @@
-﻿namespace Resto.Front.Api.DataSaturation.Domain.Entities
+﻿using Newtonsoft.Json;
+
+namespace Resto.Front.Api.DataSaturation.Domain.Entities
 {
     public class BarcodeScanInfo
     {
-        public string i { get; set; }
-        public string o { get; set; }
-        public long t { get; set; }
+        [JsonProperty("p")]
+        public string PhoneNumber { get; set; }
+        [JsonProperty("o")]
+        public string Totp { get; set; }
+        [JsonProperty("t")]
+        public long Timestamp { get; set; }
     }
 }
