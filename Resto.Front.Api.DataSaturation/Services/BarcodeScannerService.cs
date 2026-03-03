@@ -48,21 +48,21 @@ namespace Resto.Front.Api.DataSaturation.Services
 
                 var payload = barcode.DeserializeFromJson<BarcodeScanInfo>();
 
-                //string derivedSecretKey = DeriveSecret(masterSecret, payload.PhoneNumber);
-                //string computedTotp = GenerateTotp(derivedSecretKey, payload.Timestamp * 1000, config.digits, config.period);
-                //bool matches = computedTotp == payload.Totp;
+                string derivedSecretKey = DeriveSecret(masterSecret, payload.PhoneNumber);
+                string computedTotp = GenerateTotp(derivedSecretKey, payload.Timestamp * 1000, config.digits, config.period);
+                bool matches = computedTotp == payload.Totp;
 
-                //PluginContext.Log.Info("derivedSecretKey: " + derivedSecretKey);
-                //PluginContext.Log.Info("TOTP (derived from the calculation): " + computedTotp);
-                //PluginContext.Log.Info("matches with payload.totp: " + matches);
-                if (true)
+                PluginContext.Log.Info("derivedSecretKey: " + derivedSecretKey);
+                PluginContext.Log.Info("TOTP (derived from the calculation): " + computedTotp);
+                PluginContext.Log.Info("matches with payload.totp: " + matches);
+                if (matches)
                 {
                     try
                     {
                         CustomerInfo customerInfo = null;
                         Task.Run(async () =>
                         {
-                            customerInfo = await iikoCardService.GetCustomerAsync(payload.PhoneNumber, cancellationTokenSource.Token);
+                            customerInfo = await iikoCardService.GetCustomerAsync("+" + payload.PhoneNumber, cancellationTokenSource.Token);
                         }, cancellationTokenSource.Token).GetAwaiter().GetResult();
                         if (customerInfo is null)
                         {
