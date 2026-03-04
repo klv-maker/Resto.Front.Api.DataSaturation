@@ -63,7 +63,7 @@ namespace Resto.Front.Api.DataSaturation.ViewModels
             var wallet = customerInfo.userWallets.FirstOrDefault();
             if (wallet != null) 
             {
-                Balance = Math.Round(wallet.balance, 2);
+                Balance = wallet.balance;
             }
         }
     }
