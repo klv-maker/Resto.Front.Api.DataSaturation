@@ -32,7 +32,7 @@
                        Margin="0,0,0,20"/>
 
             <TextBlock Text="Текущий баланс" Foreground="#888" FontSize="12" Margin="0,0,0,5"/>
-            <TextBlock Text="{Binding Balance}" Foreground="White" FontSize="20" Margin="0,0,0,25"/>
+            <TextBlock Text="{Binding Balance, StringFormat={}{0:0.##}}" Foreground="White" FontSize="20" Margin="0,0,0,25"/>
 
             <!--<TextBlock Text="Промокод" Foreground="#888" FontSize="12" Margin="0,15,0,8"/>-->
             <!--<Grid Height="50">

@@ -55,6 +55,9 @@ namespace Resto.Front.Api.DataSaturation.Services
                 PluginContext.Log.Info("derivedSecretKey: " + derivedSecretKey);
                 PluginContext.Log.Info("TOTP (derived from the calculation): " + computedTotp);
                 PluginContext.Log.Info("matches with payload.totp: " + matches);
+
+                if (!payload.PhoneNumber.Contains("+"))
+                    payload.PhoneNumber = "+" + payload.PhoneNumber;
                 if (matches)
                 {
                     try
@@ -62,7 +65,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                         CustomerInfo customerInfo = null;
                         Task.Run(async () =>
                         {
-                            customerInfo = await iikoCardService.GetCustomerAsync("+" + payload.PhoneNumber, cancellationTokenSource.Token);
+                            customerInfo = await iikoCardService.GetCustomerAsync(payload.PhoneNumber, cancellationTokenSource.Token);
                         }, cancellationTokenSource.Token).GetAwaiter().GetResult();
                         if (customerInfo is null)
                         {
