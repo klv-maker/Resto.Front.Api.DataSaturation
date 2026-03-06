@@ -11,6 +11,7 @@ using Resto.Front.Api.DataSaturation.Views;
 using Resto.Front.Api.UI;
 using System;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Security.Cryptography;
 using System.Text;
@@ -56,9 +57,13 @@ namespace Resto.Front.Api.DataSaturation.Services
                 PluginContext.Log.Info("TOTP (derived from the calculation): " + computedTotp);
                 PluginContext.Log.Info("matches with payload.totp: " + matches);
 
+                DateTime date = DateTimeOffset.FromUnixTimeSeconds(payload.Timestamp).DateTime;
+                DateTime now = DateTime.UtcNow;
+                TimeSpan diff = now - date;
+
                 if (!payload.PhoneNumber.Contains("+"))
                     payload.PhoneNumber = "+" + payload.PhoneNumber;
-                if (matches)
+                if (matches && diff.TotalMinutes <= 5)
                 {
                     try
                     {
