@@ -44,8 +44,13 @@ namespace Resto.Front.Api.DataSaturation.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(obj.barcode))
+                {
+                    PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Barcode was empty");
                     return false;
+                }
+                PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Barcode is {obj.barcode}");
                 var barcode = BarcodeCleaner.CleanBarcode(obj.barcode);
+                PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Barcode cleaned is {barcode}");
 
                 var payload = barcode.DeserializeFromJson<BarcodeScanInfo>();
 
@@ -61,9 +66,12 @@ namespace Resto.Front.Api.DataSaturation.Services
                 DateTime now = DateTime.UtcNow;
                 TimeSpan diff = now - date;
 
+                var isExpired = diff.TotalMinutes > 5;
+                PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(BarcodeScanned)}] Total qr is expired {isExpired}");
                 if (!payload.PhoneNumber.Contains("+"))
                     payload.PhoneNumber = "+" + payload.PhoneNumber;
-                if (matches && diff.TotalMinutes <= 5)
+
+                if (matches && !isExpired)
                 {
                     try
                     {
@@ -72,6 +80,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                         {
                             customerInfo = await iikoCardService.GetCustomerAsync(payload.PhoneNumber, cancellationTokenSource.Token);
                         }, cancellationTokenSource.Token).GetAwaiter().GetResult();
+
                         if (customerInfo is null)
                         {
                             obj.vm.ShowErrorPopup($"Не найден покупатель по номеру телефона {payload.PhoneNumber}");

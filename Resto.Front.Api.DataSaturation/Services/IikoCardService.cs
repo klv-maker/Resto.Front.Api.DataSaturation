@@ -37,9 +37,6 @@ namespace Resto.Front.Api.DataSaturation.Services
 
         private void CreateLocalHttpClient()
         {
-            if (string.IsNullOrWhiteSpace(address))
-                return;
-
             localClient = new HttpClient();
             Uri baseUri = new Uri("http://localhost:7001");
             localClient.BaseAddress = baseUri;
