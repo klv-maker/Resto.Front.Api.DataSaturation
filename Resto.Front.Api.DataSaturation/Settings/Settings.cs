@@ -259,7 +259,14 @@ namespace Resto.Front.Api.DataSaturation.Settings
             {
                 if (string.IsNullOrWhiteSpace(userEncoded))
                 {
-                    userEncoded = EncodeHelper.DecodeAndDecrypt(this.userLocalField);
+                    try
+                    {
+                        userEncoded = EncodeHelper.DecodeAndDecrypt(this.userLocalField);
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginContext.Log.Error($"[{nameof(Settings)}|{nameof(UserEncoded)}] Get error when trying to read user {ex}.");
+                    }
                 }
                 return userEncoded;
             }
@@ -291,7 +298,14 @@ namespace Resto.Front.Api.DataSaturation.Settings
             {
                 if (string.IsNullOrWhiteSpace(secretEncoded))
                 {
-                    secretEncoded = EncodeHelper.DecodeAndDecrypt(this.secretLocalField);
+                    try 
+                    {
+                        secretEncoded = EncodeHelper.DecodeAndDecrypt(this.secretLocalField);
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginContext.Log.Error($"[{nameof(Settings)}|{nameof(SecretEncoded)}] Get error when trying to read password {ex}.");
+                    }
                 }
                 return secretEncoded;
             }
