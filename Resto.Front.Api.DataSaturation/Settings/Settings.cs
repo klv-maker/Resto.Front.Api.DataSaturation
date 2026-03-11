@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Xml.Serialization;
 
 namespace Resto.Front.Api.DataSaturation.Settings
 {
@@ -179,7 +180,11 @@ namespace Resto.Front.Api.DataSaturation.Settings
 
         private string userLocalField;
 
+        private string userEncoded;
+
         private string secretLocalField;
+
+        private string secretEncoded;
 
         /// <remarks/>
         public string Address
@@ -240,7 +245,27 @@ namespace Resto.Front.Api.DataSaturation.Settings
             }
             set
             {
+                if (!string.IsNullOrWhiteSpace(userEncoded))
+                    userEncoded = string.Empty;
+
                 this.userLocalField = value;
+            }
+        }
+
+        [XmlIgnore]
+        public string UserEncoded
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(userEncoded))
+                {
+                    userEncoded = EncodeHelper.DecodeAndDecrypt(this.userLocalField);
+                }
+                return userEncoded;
+            }
+            set
+            {
+                UserLocal = EncodeHelper.EncryptAndEncode(value);
             }
         }
 
@@ -252,7 +277,27 @@ namespace Resto.Front.Api.DataSaturation.Settings
             }
             set
             {
+                if (!string.IsNullOrWhiteSpace(secretEncoded))
+                    secretEncoded = string.Empty;
+
                 this.secretLocalField = value;
+            }
+        }
+
+        [XmlIgnore]
+        public string SecretEncoded
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(secretEncoded))
+                {
+                    secretEncoded = EncodeHelper.DecodeAndDecrypt(this.secretLocalField);
+                }
+                return secretEncoded;
+            }
+            set
+            {
+                SecretLocal = EncodeHelper.EncryptAndEncode(value);
             }
         }
     }

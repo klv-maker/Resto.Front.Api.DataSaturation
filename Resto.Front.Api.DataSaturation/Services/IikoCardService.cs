@@ -29,8 +29,8 @@ namespace Resto.Front.Api.DataSaturation.Services
             password = iikoCard.Secret;
             organization = iikoCard.Organization;
             address = iikoCard.Address;
-            userLocal = iikoCard.UserLocal;
-            passwordLocal = iikoCard.SecretLocal;
+            userLocal = iikoCard.UserEncoded;
+            passwordLocal = iikoCard.SecretEncoded;
             CreateLocalHttpClient();
             CreateIikoCardHttpClient();
         }
@@ -64,8 +64,8 @@ namespace Resto.Front.Api.DataSaturation.Services
             password = iikoCard.Secret;
             organization = iikoCard.Organization;
             address = iikoCard.Address;
-            userLocal = iikoCard.UserLocal;
-            passwordLocal = iikoCard.SecretLocal;
+            userLocal = iikoCard.UserEncoded;
+            passwordLocal = iikoCard.SecretEncoded;
             localClient?.CancelPendingRequests();
             localClient?.Dispose();
             localClient = null;
