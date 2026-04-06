@@ -1,20 +1,15 @@
 ﻿using Resto.Front.Api.Data.Common;
 using Resto.Front.Api.Data.Orders;
-using Resto.Front.Api.Data.Screens;
 using Resto.Front.Api.DataSaturation.Domain.Entities;
 using Resto.Front.Api.DataSaturation.Domain.Helpers;
 using Resto.Front.Api.DataSaturation.Interfaces.Services;
-using Resto.Front.Api.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using static Resto.Front.Api.DataSaturation.Helpers.JsonRPC;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Resto.Front.Api.DataSaturation.Services
 {

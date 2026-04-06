@@ -1,5 +1,4 @@
-﻿using Resto.Front.Api.Data.Brd;
-using Resto.Front.Api.Data.Orders;
+﻿using Resto.Front.Api.Data.Orders;
 using Resto.Front.Api.DataSaturation.Domain.Entities;
 using Resto.Front.Api.DataSaturation.Domain.Helpers;
 using Resto.Front.Api.DataSaturation.Domain.Models;
@@ -8,10 +7,10 @@ using Resto.Front.Api.DataSaturation.Interfaces.Services;
 using Resto.Front.Api.DataSaturation.Interfaces.ViewModels;
 using Resto.Front.Api.DataSaturation.ViewModels;
 using Resto.Front.Api.DataSaturation.Views;
+using Resto.Front.Api.Extensions;
 using Resto.Front.Api.UI;
 using System;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Disposables;
 using System.Security.Cryptography;
 using System.Text;
@@ -88,7 +87,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                         }
 
                         ShowCustomer(customerInfo);
-                        AddCustomerToOrder(obj.order, obj.os, customerInfo);
+                        CustomerService.AddCustomerToOrder(iikoCardService, obj.order, obj.os, customerInfo, cancellationTokenSource);
                     }
                     catch (Exception ex)
                     {
@@ -123,26 +122,6 @@ namespace Resto.Front.Api.DataSaturation.Services
             windowOwner = new WindowOwner();
             customerViewModel = new CustomerViewModel(customerInfo);
             windowOwner.ShowDialog<CustomerWindow>(customerViewModel);
-        }
-
-        private void AddCustomerToOrder(IOrder order, IOperationService os, CustomerInfo customerData)
-        {
-            var editSession = os.CreateEditSession();
-            var guest = order.Guests.FirstOrDefault();
-            if (guest != null)
-                editSession.RenameOrderGuest(guest.Id, customerData.userData.name, order);
-            editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerNumber, customerData.userData.phone, true, order);
-            editSession.AddOrderExternalData(Constants.ExternalDataKeyCustomerBalance, customerData.userWallets.FirstOrDefault().balance.ToString("F2"), true, order);
-            os.SubmitChanges(editSession, os.GetDefaultCredentials());
-            PluginContext.Log.Info($"[{nameof(BarcodeScannerService)}|{nameof(AddCustomerToOrder)}] Add client {customerData.userData.lastName} {customerData.userData.name} to order {order.Id} {order.Number}");
-
-            CustomerAddData customerDataNew = null;
-            Task.Run(async () => 
-            {
-                customerDataNew = await iikoCardService.AddCustomerToOrder(customerData.userData.phone, order.Id, cancellationTokenSource.Token); 
-            }, cancellationTokenSource.Token).GetAwaiter().GetResult();
-            if (customerDataNew is null)
-                PluginContext.Log.Error($"[{nameof(BarcodeScannerService)}|{nameof(AddCustomerToOrder)}] Something wrong");
         }
 
         static string DeriveSecret(string master, string customerId)

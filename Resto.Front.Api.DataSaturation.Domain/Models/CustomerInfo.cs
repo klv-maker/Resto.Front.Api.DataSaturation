@@ -29,20 +29,15 @@ namespace Resto.Front.Api.DataSaturation.Domain.Models
 
     public class CustomerAddData
     {
-        public object cardNumber { get; set; }
-        public object cardTrack { get; set; }
+        public string cardNumber { get; set; }
+        public string cardTrack { get; set; }
         public CustomerAddDataInfo userData { get; set; }
     }
 
-    public class CustomerAddDataInfo
+    public class CustomerAddDataInfo : CustomerData
     {
-        public object birthday { get; set; }
         public string fullName { get; set; }
-        public string lastName { get; set; }
-        public string name { get; set; }
-        public string phone { get; set; }
         public Guid? referrer { get; set; }
-        public Sex sex { get; set; }
     }
 
 }
