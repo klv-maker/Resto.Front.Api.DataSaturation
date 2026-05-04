@@ -216,7 +216,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                     toSendData.AddValuesToSendData(productInfo);
                 }
                 toSendData.currentStopList = stopList.GetProductInfoByStopList();
-                PluginContext.Log.Info(toSendData.SerializeToJson());
+                //PluginContext.Log.Info(toSendData.SerializeToJson());
                 await Send(toSendData);
             }
             catch (Exception ex)
@@ -229,7 +229,7 @@ namespace Resto.Front.Api.DataSaturation.Services
         {
             try
             {
-                PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Get update for product {product.Id} {product.Number} price = {product.Price}");
+                //PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Get update for product {product.Id} {product.Number} price = {product.Price}");
                 Task.Run(async () =>
                 {
                     try
@@ -244,6 +244,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                                 {
                                     isStartedProductChanged = true;
                                     Task.Delay(15000).Wait(cancellationSource.Token); //ждем с токеном отмены
+                                    PluginContext.Log.Info($"[{nameof(ProductsService)}|{nameof(ProductChanged)}] Get update products");
                                     await UpdateProducts();
                                 }
                             }

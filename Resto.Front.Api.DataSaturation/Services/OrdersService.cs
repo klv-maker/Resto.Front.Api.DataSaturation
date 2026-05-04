@@ -133,7 +133,7 @@ namespace Resto.Front.Api.DataSaturation.Services
                 {
                     PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(StartSendOrderInfo)}] Get order for send {order.Id} eventType = {eventType}");
                     var orderInfo = order.OrderToOrderInfo(eventType, dataQRLocal);
-                    PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(StartSendOrderInfo)}] Get orderInfo = {orderInfo.SerializeToJson()}");
+                    //PluginContext.Log.Info($"[{nameof(OrdersService)}|{nameof(StartSendOrderInfo)}] Get orderInfo = {orderInfo.SerializeToJson()}");
                     if (orderInfo is null || (orderInfo.orderStatus == OrderStatusInfo.start && order.Items.Count == 0))
                         return;
 

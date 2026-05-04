@@ -71,7 +71,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
                         inStopList = inStopList
                     };
                     productInfoShorts.Add(productInfoWithSize);
-                    PluginContext.Log.Info(productInfoWithSize.SerializeToJson());
+                    //PluginContext.Log.Info(productInfoWithSize.SerializeToJson());
                 }
                 return productInfoShorts;
             }
@@ -84,7 +84,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
                 inStopList = inStopList
             };
             productInfoShorts.Add(productInfo);
-            PluginContext.Log.Info(productInfo.SerializeToJson());
+            //PluginContext.Log.Info(productInfo.SerializeToJson());
             return productInfoShorts;
         }
 
@@ -106,7 +106,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
                             inStopList = true
                         };
 
-                        PluginContext.Log.Info(productInfoShort.SerializeToJson());
+                        //PluginContext.Log.Info(productInfoShort.SerializeToJson());
                         productInfoShorts.Add(productInfoShort);
                     }
                 }
@@ -119,7 +119,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
                         price = prod.price,
                         inStopList = true
                     };
-                    PluginContext.Log.Info(productInfoShort.SerializeToJson());
+                    //PluginContext.Log.Info(productInfoShort.SerializeToJson());
                     productInfoShorts.Add(productInfoShort);
                 }
             }
