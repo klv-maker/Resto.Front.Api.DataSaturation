@@ -16,7 +16,7 @@ namespace Resto.Front.Api.DataSaturation.Domain.Helpers
             {
                 foreach (var item in order.Payments)
                 {
-                    if ((item.Type.Name.IndexOf("яндекс", StringComparison.OrdinalIgnoreCase) >= 0) || (item.Type.Name.IndexOf("yandex", StringComparison.OrdinalIgnoreCase) >= 0))
+                    if ((item.Type.Name.IndexOf("яндекс", StringComparison.OrdinalIgnoreCase) >= 0) || (item.Type.Name.IndexOf("yandex", StringComparison.OrdinalIgnoreCase) >= 0) || (item.Type.Name.IndexOf("qr", StringComparison.OrdinalIgnoreCase) >= 0))
                     {
                         if (!item.AdditionalData.SerializeToJson().Contains("PayLink") && item.Sum > 0)
                         {
