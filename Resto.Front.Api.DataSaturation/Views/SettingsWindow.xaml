@@ -6,248 +6,495 @@
         xmlns:local="clr-namespace:Resto.Front.Api.DataSaturation.Views"
         mc:Ignorable="d"
         WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
         WindowState="Normal"
-        Title="SettingsWindow" Height="700" Width="500">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="6*" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="4*" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
+        Title="SettingsWindow" Height="850" Width="550"
+        MinHeight="850" MinWidth="500">
+
+    <Window.Resources>
+        <!-- Тень для окна -->
+        <DropShadowEffect x:Key="ShadowEffect" 
+                          BlurRadius="15" 
+                          ShadowDepth="3" 
+                          Opacity="0.15"/>
+
+        <!-- Стиль для ListBoxItem -->
+        <Style TargetType="ListBoxItem">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <ContentPresenter/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стиль для CheckBox Toggle -->
+        <Style TargetType="CheckBox" x:Key="ToggleCheckBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="20"
+                                Width="44" 
+                                Height="24">
+                            <Border x:Name="ToggleButton"
+                                    Background="White"
+                                    CornerRadius="18"
+                                    Width="20" 
+                                    Height="20"
+                                    HorizontalAlignment="Left"
+                                    Margin="2">
+                                <Border.Effect>
+                                    <DropShadowEffect ShadowDepth="1" BlurRadius="3" Opacity="0.2"/>
+                                </Border.Effect>
+                            </Border>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="ToggleButton" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="ToggleButton" Property="Margin" Value="0,2,2,2"/>
+                                <Setter Property="Background" Value="#757575"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#FAFAFA" 
+            CornerRadius="15" 
+            BorderThickness="1" 
+            BorderBrush="#E0E0E0"
+            Effect="{StaticResource ShadowEffect}">
+
+        <!-- Основной Grid -->
+        <Grid Margin="15,20,15,15">
             <Grid.RowDefinitions>
-                <RowDefinition Height="8*" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto"/>
+                <!-- Заголовок -->
+                <RowDefinition Height="Auto"/>
+                <!-- Контент -->
+                <RowDefinition Height="Auto"/>
+                <!-- Кнопки внизу -->
             </Grid.RowDefinitions>
-            <ListBox Grid.Row="0"
-                     SelectedItem="{Binding SelectedAddress}"
-                     ItemsSource="{Binding AddressViewModels}"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <DockPanel>
-                            <TextBlock Text="{Binding Path=AddressNumber}"
-                                       FontSize="24"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center"
-                                       Margin="5,0,5,0"/>
-                            <TextBox FontSize="25"
-                                     Margin="0,0,5,0"
-                                     VerticalAlignment="Stretch"
-                                     MinWidth="350"
-                                     HorizontalAlignment="Stretch"
-                                     Text="{Binding Path=AddressApi}"/>
-                            <Button Content="-"
-                                    Margin="0,0,5,0"
-                                    HorizontalAlignment="Right"
-                                    Grid.Column="0"
-                                    Width="30"
-                                    Height="30"
-                                    FontSize="25"
-                                    FontWeight="Medium"
-                                    Background="LightGray"
-                                    Command="{Binding RemoveCommand}"
-                                    VerticalAlignment="Center"
-                                    VerticalContentAlignment="Center"/>
-                        </DockPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <Grid Grid.Row="1">
+
+            <!-- Заголовок окна -->
+            <Grid Grid.Row="0" Height="40" Margin="-15,0,-15,0">
+                <Border Background="#616161" CornerRadius="15,15,0,0">
+                    <Grid>
+                        <TextBlock Text="⚙️ Настройки интеграции" 
+                                   FontSize="16" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="White" 
+                                   VerticalAlignment="Center" 
+                                   HorizontalAlignment="Center"/>
+                        <Button Content="✕" 
+                                Command="{Binding CancelCommand}"
+                                Width="30" 
+                                Height="30" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Center"
+                                Margin="0,0,10,0"
+                                Background="Transparent" 
+                                BorderThickness="0"
+                                Foreground="White"
+                                FontSize="16"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#9E9E9E"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Контент с прокруткой -->
+            <ScrollViewer Grid.Row="1" 
+                          VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Disabled"
+                          Margin="0,15,0,15">
+
+                <StackPanel>
+                    <!-- Блок адресов API -->
+                    <Border Background="#F5F5F5" 
+                            CornerRadius="10" 
+                            Padding="10" 
+                            Margin="0,0,0,15"
+                            BorderBrush="#E0E0E0" 
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="🌐 Адреса терминалов" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="14" 
+                                       Margin="0,0,0,10"
+                                       Foreground="#424242"/>
+
+                            <!-- ListBox с фиксированной высотой -->
+                            <ListBox Grid.Row="1"
+                                     SelectedItem="{Binding SelectedAddress}"
+                                     ItemsSource="{Binding AddressViewModels}"
+                                     Height="200"
+                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                     Background="Transparent" 
+                                     BorderThickness="0">
+
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="White" 
+                                                CornerRadius="8" 
+                                                Margin="0,0,0,8" 
+                                                Padding="8"
+                                                BorderBrush="#E0E0E0" 
+                                                BorderThickness="1">
+                                            <DockPanel>
+                                                <TextBlock Text="{Binding Path=AddressNumber}"
+                                                           FontSize="14"
+                                                           FontWeight="Bold"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="#757575"
+                                                           Width="40"
+                                                           TextAlignment="Center"/>
+                                                <TextBox FontSize="13"
+                                                         Margin="8,0"
+                                                         VerticalAlignment="Center"
+                                                         MinWidth="250"
+                                                         MaxWidth="350"
+                                                         Text="{Binding Path=AddressApi}"
+                                                         TextWrapping="NoWrap">
+                                                    <TextBox.Template>
+                                                        <ControlTemplate TargetType="TextBox">
+                                                            <Border Background="#FAFAFA"
+                                                                    BorderBrush="#E0E0E0"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="5"
+                                                                    Padding="8,5">
+                                                                <ScrollViewer x:Name="PART_ContentHost" 
+                                                                              HorizontalScrollBarVisibility="Auto"
+                                                                              VerticalScrollBarVisibility="Disabled"/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </TextBox.Template>
+                                                </TextBox>
+                                                <Button Content="🗑️" 
+                                                        ToolTip="Удалить"
+                                                        Width="32" 
+                                                        Height="32"
+                                                        FontSize="14"
+                                                        Command="{Binding RemoveCommand}"
+                                                        Cursor="Hand">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Background="#F5F5F5" CornerRadius="6" BorderBrush="#E0E0E0" BorderThickness="1">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#E0E0E0"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <Button Grid.Row="2" 
+                                    Content="➕ Добавить адрес"
+                                    Command="{Binding AddCommand}"
+                                    Margin="0,10,0,0"
+                                    Background="#E0E0E0"
+                                    Foreground="#424242"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    FontWeight="SemiBold"
+                                    FontSize="13"
+                                    Height="36">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#BDBDBD"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- QR-код -->
+                    <Border Background="#F5F5F5" 
+                            CornerRadius="10" 
+                            Padding="10" 
+                            Margin="0,0,0,15"
+                            BorderBrush="#E0E0E0" 
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="🔲 QR-код для оплаты" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="14" 
+                                       Margin="0,0,0,10"
+                                       Foreground="#424242"/>
+
+                            <TextBox Grid.Row="1" 
+                                     Text="{Binding DataQR}" 
+                                     FontSize="14" 
+                                     Height="40">
+                                <TextBox.Template>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <Border Background="White"
+                                                BorderBrush="#E0E0E0"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="10,8">
+                                            <ScrollViewer x:Name="PART_ContentHost"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </TextBox.Template>
+                            </TextBox>
+                        </Grid>
+                    </Border>
+
+                    <!-- Отправка чеков -->
+                    <Border Background="#F5F5F5" 
+                            CornerRadius="10" 
+                            Padding="10" 
+                            Margin="0,0,0,15"
+                            BorderBrush="#E0E0E0" 
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="📄 Включить отправку чеков" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="14"
+                                       Foreground="#424242"
+                                       VerticalAlignment="Center"/>
+                            <CheckBox Grid.Column="1"
+                                      VerticalAlignment="Center" 
+                                      HorizontalAlignment="Left"
+                                      IsChecked="{Binding EnableOrdersService}" 
+                                      Margin="15,0,0,0"
+                                      Style="{StaticResource ToggleCheckBox}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Смена контента -->
+                    <Border Background="#F5F5F5" 
+                            CornerRadius="10" 
+                            Padding="10" 
+                            Margin="0,0,0,15"
+                            BorderBrush="#E0E0E0" 
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="⏱️ Автосмена контента через (сек)" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="14"
+                                       Foreground="#424242"
+                                       VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding SwitchMediaTime}"
+                                     Grid.Column="1"
+                                     FontSize="14"
+                                     Height="36"
+                                     Width="100"
+                                     HorizontalAlignment="Left"
+                                     Margin="15,0,0,0"
+                                     TextAlignment="Center"
+                                     TextChanged="TextBox_TextChanged"
+                                     PreviewTextInput="TextBox_PreviewTextInput">
+                                <TextBox.Template>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <Border Background="White"
+                                                BorderBrush="#E0E0E0"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="8,5">
+                                            <ScrollViewer x:Name="PART_ContentHost" HorizontalScrollBarVisibility="Disabled"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </TextBox.Template>
+                            </TextBox>
+                        </Grid>
+                    </Border>
+
+                    <!-- IIKO Card блок -->
+                    <Border Background="#F5F5F5" 
+                            CornerRadius="10" 
+                            Padding="10" 
+                            Margin="0,0,0,0"
+                            BorderBrush="#E0E0E0" 
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="💳 IIKO Card" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="14" 
+                                       Margin="0,0,0,12"
+                                       Foreground="#424242"/>
+
+                            <Grid Grid.Row="1" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Логин" 
+                                           FontSize="13" 
+                                           Foreground="#616161" 
+                                           VerticalAlignment="Center"
+                                           Width="50"/>
+                                <TextBox Grid.Column="1" 
+                                         Text="{Binding IikoCard.UserEncoded}"
+                                         FontSize="13"
+                                         Height="36">
+                                    <TextBox.Template>
+                                        <ControlTemplate TargetType="TextBox">
+                                            <Border Background="White"
+                                                    BorderBrush="#E0E0E0"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Padding="8,5">
+                                                <ScrollViewer x:Name="PART_ContentHost"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </TextBox.Template>
+                                </TextBox>
+                            </Grid>
+
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Пароль" 
+                                           FontSize="13" 
+                                           Foreground="#616161" 
+                                           VerticalAlignment="Center"
+                                           Width="50"/>
+                                <TextBox Grid.Column="1" 
+                                         Text="{Binding IikoCard.SecretEncoded}"
+                                         FontSize="13"
+                                         Height="36">
+                                    <TextBox.Template>
+                                        <ControlTemplate TargetType="TextBox">
+                                            <Border Background="White"
+                                                    BorderBrush="#E0E0E0"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Padding="8,5">
+                                                <ScrollViewer x:Name="PART_ContentHost"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </TextBox.Template>
+                                </TextBox>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Фиксированные кнопки внизу -->
+            <Grid Grid.Row="2" Margin="0,10,0,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="8*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Label Content="Добавить новый адрес апи"
-                       Height="50"
-                       FontSize="15"
-                       VerticalContentAlignment="Center"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Right"/>
-                <Button Content="+"
+
+                <Button Content="Отмена"
+                        Grid.Column="0"
+                        Height="45"
+                        Margin="0,0,10,0"
+                        Background="White"
+                        Foreground="#616161"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="1"
+                        Command="{Binding CancelCommand}"
+                        Cursor="Hand"
+                        FontSize="14"
+                        FontWeight="SemiBold">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F5F5F5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <Button Content="Сохранить"
                         Grid.Column="1"
-                        Width="40"
-                        Height="40"
-                        FontSize="25"
-                        HorizontalAlignment="Center"
-                        FontWeight="Medium"
-                        Background="LightGray"
-                        Command="{Binding AddCommand}"
-                        VerticalContentAlignment="Top"/>
+                        Height="45"
+                        Margin="10,0,0,0"
+                        Background="#757575"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Command="{Binding SaveCommand}"
+                        Cursor="Hand"
+                        FontSize="14"
+                        FontWeight="SemiBold">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#616161"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
             </Grid>
         </Grid>
-        <DockPanel Grid.Row="1">
-            <Label Content="QR-код:"
-                    Height="50"
-                    FontSize="15"
-                    VerticalContentAlignment="Center"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Left"
-                    Margin="6,0,0,0" />
-            <Border BorderBrush="Black"
-                    Height="40"
-                    BorderThickness="1"
-                    Margin="5,0,5,0"
-                    HorizontalAlignment="Right"
-                    Width="400">
-                <TextBox Text="{Binding DataQR}"
-                         FontSize="25"
-                         Height="40"
-                         HorizontalContentAlignment="Center"
-                         VerticalContentAlignment="Center"
-                         TextWrapping="NoWrap"
-                         Width="400"/>
-            </Border>
-        </DockPanel>
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="10*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Label Content="Включить отправку чеков:"
-                   Height="50"
-                   FontSize="15"
-                   VerticalContentAlignment="Center"
-                   HorizontalAlignment="Right"/>
-            <CheckBox Content=""
-                      Grid.Column="1"
-                      VerticalAlignment="Center" 
-                      Checked="CheckBox_Checked"
-                      VerticalContentAlignment="Center"
-                      IsChecked="{Binding EnableOrdersService}" 
-                      Height="15"
-                      Width="20" />
-        </Grid>
-        <DockPanel Grid.Row="3">
-            <Label Content="Через сколько автоматически сменить контент:"
-                   Height="50"
-                   FontSize="15"
-                   HorizontalAlignment="Left"
-                   VerticalContentAlignment="Center"
-                   VerticalAlignment="Center"
-                   Margin="5,0,5,0"/>
-            <Border BorderBrush="Black"
-                    Height="40"
-                    BorderThickness="1"
-                    Margin="5,0,5,0"
-                    Width="140">
-                <TextBox Text="{Binding SwitchMediaTime}"
-                         FontSize="25"
-                         HorizontalContentAlignment="Center"
-                         VerticalContentAlignment="Center"
-                         TextChanged="TextBox_TextChanged"
-                         PreviewTextInput="TextBox_PreviewTextInput"
-                         Height="40"
-                         Width="140"                 
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"/>
-            </Border>
-        </DockPanel>
-        <Border Grid.Row="4"
-                BorderBrush="Black"
-                BorderThickness="1">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="0.8*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <DockPanel>
-                    <Label Content="IIKO Card"
-                           Height="50"
-                           FontSize="15"
-                           VerticalAlignment="Stretch"
-                           HorizontalAlignment="Right"/>
-                </DockPanel>
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0"
-                           Content="Логин локального iiko card:"
-                           Height="50"
-                           FontSize="15"
-                           HorizontalAlignment="Right"
-                           VerticalContentAlignment="Center"
-                           VerticalAlignment="Center"
-                           Margin="5,0,5,0"/>
-                    <Border BorderBrush="Black"
-                            Height="40"
-                            BorderThickness="1"
-                            Margin="5,0,5,0"
-                            Width="240"
-                            Grid.Column="1">
-                        <TextBox Text="{Binding IikoCard.UserEncoded}"
-                                 FontSize="25"
-                                 HorizontalContentAlignment="Center"
-                                 VerticalContentAlignment="Center"
-                                 Height="40"
-                                 Width="240"
-                                 HorizontalAlignment="Center"
-                                 VerticalAlignment="Center"/>
-                    </Border>
-                </Grid>
-                <Grid Grid.Row="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Label Content="Пароль локального iiko card:"
-                           Height="50"
-                           FontSize="15"
-                           HorizontalAlignment="Right"
-                           VerticalContentAlignment="Center"
-                           VerticalAlignment="Center"
-                           Margin="5,0,5,0"
-                           Grid.Column="0"/>
-                    <Border BorderBrush="Black"
-                            Height="40"
-                            BorderThickness="1"
-                            Margin="5,0,5,0"
-                            Width="240"
-                            Grid.Column="1">
-                        <TextBox Text="{Binding IikoCard.SecretEncoded}"
-                                 FontSize="25"
-                                 HorizontalContentAlignment="Center"
-                                 VerticalContentAlignment="Center"
-                                 Height="40"
-                                 Width="240"
-                                 HorizontalAlignment="Center"
-                                 VerticalAlignment="Center"/>
-                    </Border>
-                </Grid>
-            </Grid>
-        </Border>
-        <Grid Grid.Row="5" Margin="5,0,5,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Button Content="Cancel"
-                    HorizontalAlignment="Left"
-                    Grid.Column="0"
-                    Width="100"
-                    Height="50"
-                    FontSize="25"
-                    FontWeight="Medium"
-                    Background="Red"
-                    Command="{Binding CancelCommand}"
-                    VerticalAlignment="Center"/>
-            <Button Content="Save"
-                    Margin="10,0,0,0"
-                    Grid.Column="1"
-                    Width="100"
-                    Height="50"
-                    FontSize="25"
-                    FontWeight="Medium"
-                    Background="#32CD32"
-                    Command="{Binding SaveCommand}"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"/>
-        </Grid>
-    </Grid>
+    </Border>
 </Window>
